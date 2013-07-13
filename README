@@ -1,0 +1,55 @@
+# what is this?
+QFuse is a lightweight example for how to use FUSE and Qt together. 
+
+see the file called PROBLEM for what is not working yet.
+
+# features
+ * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
+ * FUSE runs in its own thread/QThread and thus does not affect the main gui thread of Qt -
+   but pressing CTRL+C will shutdown the FUSE thread, unmounts the FS and cleanly exists QFuse.
+ * a minimal read only FUSE FS so that one can see some files using 'ls -la' on the shell. in
+   one subdirectory there is a testfile which will keep the FUSE part of QFuse busy. it is used
+   as a test if CTRL+C can still shutdown when there are still 
+   pending FUSE syscalls like:
+    * read(..)
+    * readdir(..)
+   in progress.
+
+# dependencies
+ * Qt 4.x
+ * FUSE library
+
+# how to compile
+ * qmake
+ * make
+ 
+# how to use 
+
+## start the software (from a shell)
+mkdir dst
+./QFuse 
+
+## exit the daemon
+hit CTRL+C on the shell you started QFuse from
+
+in case it crashes, shoot the process with 
+kill -9 `pidof QFuse`
+fusermount -u mountpoint
+ 
+# documentation
+* http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/unix-signals.html
+* https://code.google.com/p/fuse-examplefs/ 
+* http://cinwell.wordpress.com/2012/02/07/how-fuse-works-lib-level/
+ 
+# license
+this codebase, respecting each subprojects license of course, is licensed - WTFPL – Do What the Fuck You Want to Public License -> http://www.wtfpl.net/
+
+ this repository consists of 3 merged code bases:
+  - Qt hello world example 
+    - main.cpp
+  - Qt posix signals example 
+    - main.cpp
+  - FUSE hello.c example 
+    - examplefs.hh, examplefs.cc
+  - FUSE example from https://code.google.com/p/fuse-examplefs/ 
+    - wrap.cc, wrap.hh

@@ -1,0 +1,83 @@
+this example is not final yet and contains serious issues, please help to fix it!
+
+% uname -a
+Linux schiejo-VirtualBox 3.5.0-28-generic #48-Ubuntu SMP Tue Apr 23 23:03:38 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+
+% dpkg -l | grep fuse
+ii  fuse                                            2.9.0-1ubuntu2                            amd64        Filesystem in Userspace
+ii  gvfs-fuse                                       1.14.0-0ubuntu6                           amd64        userspace virtual filesystem - fuse server
+ii  libfuse-dev                                     2.9.0-1ubuntu2                            amd64        Filesystem in Userspace (development)
+ii  libfuse2:amd64                                  2.9.0-1ubuntu2                            amd64        Filesystem in Userspace (library)
+ii  virtualbox-fuse                                 4.1.18-dfsg-1ubuntu1.2                    amd64        x86 virtualization solution - virtual filesystem
+
+% gcc -v
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.7.2-5ubuntu1' --with-bugurl=file:///usr/share/doc/gcc-4.7/README.Bugs --enable-languages=c,c++,go,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.7 --enable-shared --enable-linker-build-id --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.7 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --enable-objc-gc --disable-werror --with-arch-32=i686 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 4.7.2 (Ubuntu/Linaro 4.7.2-5ubuntu1) 
+
+% ./QFuse
+set_rootdir
+ExampleFS::ExampleFS
+setting FS root to: qt-exampels/qfuse/dst
+fusermount: failed to open /etc/fuse.conf: Permission denied
+fuse_mount worked 
+FUSE library version: 2.9.0
+nullpath_ok: 0
+nopath: 0
+utime_omit_ok: 0
+fuse_new worked 
+fuse server up and running ;-) 
+creating fuse_loop() now 
+unique: 1, opcode: INIT (26), nodeid: 0, insize: 56, pid: 0
+INIT: 7.19
+flags=0x0000047b
+max_readahead=0x00020000
+wrap_init
+ExampleFS::Init
+   INIT: 7.18
+   flags=0x00000413
+   max_readahead=0x00020000
+   max_write=0x00020000
+   max_background=0
+   congestion_threshold=0
+   unique: 1, success, outsize: 40
+   
+   
+now after typing this in a different shell:
+% ls dst
+
+./QFuse will then output these lines and segfault!
+   
+unique: 2, opcode: GETATTR (3), nodeid: 1, insize: 56, pid: 13136
+getattr /
+wrap_getattr
+ExampleFS::Getattr - called with: /
+ExampleFS::Getattr return /
+ExampleFS::Getattr return value of 0
+   unique: 2, success, outsize: 120
+unique: 3, opcode: GETATTR (3), nodeid: 1, insize: 56, pid: 13145
+getattr /
+wrap_getattr
+ExampleFS::Getattr - called with: /
+ExampleFS::Getattr return /
+ExampleFS::Getattr return value of 0
+   unique: 3, success, outsize: 120
+unique: 4, opcode: GETXATTR (22), nodeid: 1, insize: 65, pid: 13145
+getxattr / security.selinux 255
+[1]    13130 illegal hardware instruction (core dumped)  ./QFuse
+
+% dmesg
+[43974.642030] QThread[13107]: segfault at 7fccdd3c12e8 ip 00007fccdd3c12e8 sp 00007fccd3ffe948 error 15 in ld-2.15.so[7fccdd3c0000+2000]
+[43990.939699] QThread[13134] trap invalid opcode ip:7f7779b71748 sp:7f7776169aa8 error:0 in libc-2.15.so[7f7779b69000+1b5000]
+[44248.894500] QThread[13208] trap invalid opcode ip:7f09ba76f748 sp:7f09b6d67aa8 error:0 in libc-2.15.so[7f09ba767000+1b5000]
+
+% cat /etc/issue
+Ubuntu 12.10 \n \l
+
+% dpkg -l | grep seli
+ii  libselinux1:amd64                               2.1.9-5ubuntu1                            amd64        SELinux runtime shared libraries
+ii  libselinux1-dev                                 2.1.9-5ubuntu1                            amd64        SELinux development headers
