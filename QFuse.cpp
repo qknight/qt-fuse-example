@@ -8,6 +8,7 @@
 #include <QString>
 #include <QDir>
 #include <QDebug>
+#include "ColorCodes.hh"
 
 
 #include "wrap.hh"
@@ -32,30 +33,56 @@ static void *fuse_thread(void *arg)
 {
     if(arg) {}
 
-    qDebug() << "creating fuse_loop() now";
+    qDebug() << YELLOW << "creating fuse_loop_() now" << RESET;
 // translated path: / to dst/
 // getattr(dst/)
 // fuse: error creating thread: Resource temporarily unavailable
 
-    if(fuse_loop(fs.fuse) < 0) {
+    if(fuse_loop_mt(fs.fuse) < 0) {
         perror("fuse_loop");
         fs.failed = 1;
     }
-    qDebug() << "exiting fuse_loop() now";
+    qDebug() << YELLOW << "exiting fuse_loop() now" << RESET;
 
-    fuse_destroy(fs.fuse);
+//     fuse_destroy(fs.fuse);
     return NULL;
 }
 
 
 QFuse::QFuse(QObject* parent) : QObject(parent) {
+
     fusefs_oper.getattr = wrap_getattr;
+    fusefs_oper.readlink = wrap_readlink;
+    fusefs_oper.getdir = NULL;
+    fusefs_oper.mknod = wrap_mknod;
+    fusefs_oper.mkdir = wrap_mkdir;
+    fusefs_oper.unlink = wrap_unlink;
+    fusefs_oper.rmdir = wrap_rmdir;
+    fusefs_oper.symlink = wrap_symlink;
+    fusefs_oper.rename = wrap_rename;
+    fusefs_oper.link = wrap_link;
+    fusefs_oper.chmod = wrap_chmod;
+    fusefs_oper.chown = wrap_chown;
+    fusefs_oper.truncate = wrap_truncate;
+    fusefs_oper.utime = wrap_utime;
     fusefs_oper.open = wrap_open;
     fusefs_oper.read = wrap_read;
-    fusefs_oper.readdir = wrap_readdir;
-    fusefs_oper.init = wrap_init;
-    fusefs_oper.opendir = wrap_opendir;
+    fusefs_oper.read_buf = wrap_read_buf;
+    fusefs_oper.write = wrap_write;
+    fusefs_oper.statfs = wrap_statfs;
+    fusefs_oper.flush = wrap_flush;
+    fusefs_oper.release = wrap_release;
+    fusefs_oper.fsync = wrap_fsync;
+    fusefs_oper.setxattr = wrap_setxattr;
     fusefs_oper.getxattr = wrap_getxattr;
+    fusefs_oper.listxattr = wrap_listxattr;
+    fusefs_oper.removexattr = wrap_removexattr;
+    fusefs_oper.opendir = wrap_opendir;
+    fusefs_oper.readdir = wrap_readdir;
+    fusefs_oper.releasedir = wrap_releasedir;
+    fusefs_oper.fsyncdir = wrap_fsyncdir;
+    fusefs_oper.init = wrap_init;
+    fusefs_oper.access = wrap_access;
 }
 
 int QFuse::doWork() {
@@ -70,6 +97,8 @@ int QFuse::doWork() {
     // parses command line options (-d -s and -h)
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
+    //FIXME fusermount -u dst works but won't exit QFuse!
+    fuse_unmount(TUP_MNT, fs.ch);
 
     fs.ch = fuse_mount(TUP_MNT, &args);
     if(!fs.ch) {
@@ -106,11 +135,6 @@ int QFuse::doWork() {
 
     qDebug() << "fuse server up and running ;-)";
 
-    // FIXME this code is here to keep the thread alive, just to make sure that
-    // the variables used for the FUSE backend are not cleared
-    while(1)
-        sleep(1);
-
     return 0;
 
 err_unmount:
@@ -122,19 +146,17 @@ err_out:
 
 
 int QFuse::shutDown() {
-    // FIXME i know that this code can't be called right now and i don't care
-    // since i have other more important segfault problems at the moment
-    qDebug() << __FUNCTION__;
+    qDebug() << YELLOW <<__FUNCTION__ << RESET;
 
+    qDebug() << YELLOW << __FUNCTION__ << " fuse_unmount" << RESET;
     fuse_unmount(TUP_MNT, fs.ch);
 
-//     fuse_session_exit(fs.fuse);
-//     fuse_exit(fs.fuse);
-//     fuse_destroy(fs.fuse);
-
-    qDebug() << __FUNCTION__ << " calling pthread_join()";
+    qDebug() << YELLOW << __FUNCTION__ << " calling pthread_join()" << RESET;
     pthread_join(fs.pid, NULL);
-    qDebug() << __FUNCTION__ << " pthread_joined(;-)";
+    qDebug() << YELLOW << __FUNCTION__ << " pthread_joined(;-)" << RESET;
+
+    qDebug() << YELLOW << __FUNCTION__ << " fuse_exit" << RESET;
+    fuse_exit(fs.fuse);
 
     fs.fuse = NULL;
     memset(&fs, 0, sizeof(fs));
