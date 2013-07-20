@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(workerThread1, SIGNAL(finished()), &qFuse, SLOT(deleteLater()));
 
     QObject::connect(&d, SIGNAL(sigINT()), &qFuse, SLOT(shutDown()));
+    QObject::connect(&d, SIGNAL(sigTERM()), &qFuse, SLOT(shutDown()));
     QObject::connect(&qFuse, SIGNAL(sigShutDownComplete()), &a, SLOT(quit()));
     
     // fusermount -u dst will trigger this slot at qFuse
