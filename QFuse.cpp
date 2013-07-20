@@ -1,6 +1,8 @@
 // parts of this code were adapted from fuse_server.c; a very good example on how
 // to use the fuse api ;-) -> thanks to Mike Shal <marfey@gmail.com>
 
+// thanks to cbreak#qt@irc.freenode.net for his help to get the aboutToQuit stuff working
+
 #include "QFuse.hh"
 
 #include <QFile>
@@ -43,9 +45,8 @@ static void *fuse_thread(void *arg)
     }
     qDebug() << YELLOW << "exiting fuse_loop_mt() now" << RESET;
 
-    //FIXME find a better way to shutdown via the qfuse object
-    qDebug() << RED << __FUNCTION__ << " someone unmounted the fuse filesystem -> FIXME: find a way to send a Qt::SIGNAL, maybe emit sigShutDownComplete();" << RESET;
-    QMetaObject::invokeMethod(QCoreApplication::instance(), "quit", Qt::QueuedConnection);
+    // this call will shutdown the qcoreapplication via the qfuse object
+    QMetaObject::invokeMethod(QCoreApplication::instance(), "aboutToQuit", Qt::QueuedConnection);
     
     return NULL;
 }
