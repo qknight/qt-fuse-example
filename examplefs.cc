@@ -98,6 +98,22 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
     return size;
 }
 
+	/** Store data from an open file in a buffer
+	 *
+	 * Similar to the read() method, but data is stored and
+	 * returned in a generic buffer.
+	 *
+	 * No actual copying of data has to take place, the source
+	 * file descriptor may simply be stored in the buffer for
+	 * later data transfer.
+	 *
+	 * The buffer must be allocated dynamically and stored at the
+	 * location pointed to by bufp.  If the buffer contains memory
+	 * regions, they too must be allocated using malloc().  The
+	 * allocated memory will be freed by the caller.
+	 *
+	 * Introduced in version 2.9
+	 */
 int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size, off_t off, struct fuse_file_info *fileInfo) {
     printf(GREEN "ExampleFS::Read_buf, path=%s, size=%u" RESET "\n", path, size);
     struct fuse_bufvec *src;

@@ -8,6 +8,16 @@
 #include <fuse.h>
 
 
+class CppSignalWrapper: public QObject {
+  Q_OBJECT
+public: 
+  void fuseExited() {
+    emit fuseExitedSig();
+  }
+signals: 
+      void fuseExitedSig();
+};
+
 class QFuse : public QObject {
     Q_OBJECT
 public:

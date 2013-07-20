@@ -8,6 +8,8 @@
 #include <QString>
 #include <QDir>
 #include <QDebug>
+#include <QCoreApplication>
+#include <QMetaObject>
 #include "ColorCodes.hh"
 
 
@@ -32,19 +34,19 @@ static struct fuse_server {
 static void *fuse_thread(void *arg)
 {
     if(arg) {}
-
-    qDebug() << YELLOW << "creating fuse_loop_() now" << RESET;
-// translated path: / to dst/
-// getattr(dst/)
-// fuse: error creating thread: Resource temporarily unavailable
+    
+    qDebug() << YELLOW << "creating fuse_loop_mt() now" << RESET;
 
     if(fuse_loop_mt(fs.fuse) < 0) {
-        perror("fuse_loop");
+        perror("fuse_loop_mt");
         fs.failed = 1;
     }
-    qDebug() << YELLOW << "exiting fuse_loop() now" << RESET;
+    qDebug() << YELLOW << "exiting fuse_loop_mt() now" << RESET;
 
-//     fuse_destroy(fs.fuse);
+    //FIXME find a better way to shutdown via the qfuse object
+    qDebug() << RED << __FUNCTION__ << " someone unmounted the fuse filesystem -> FIXME: find a way to send a Qt::SIGNAL, maybe emit sigShutDownComplete();" << RESET;
+    QMetaObject::invokeMethod(QCoreApplication::instance(), "quit", Qt::QueuedConnection);
+    
     return NULL;
 }
 
@@ -97,7 +99,6 @@ int QFuse::doWork() {
     // parses command line options (-d -s and -h)
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-    //FIXME fusermount -u dst works but won't exit QFuse!
     fuse_unmount(TUP_MNT, fs.ch);
 
     fs.ch = fuse_mount(TUP_MNT, &args);
@@ -107,14 +108,6 @@ int QFuse::doWork() {
     }
 
     qDebug() << "fuse_mount worked";
-
-    // installs signal handlers for INT, HUP, TERM and PIPE
-    // FIXME SIGINT redirect coming from MyDaemon.cpp (made in main.cpp) should
-    // also inform the fuse thread about what is going on
-
-
-    // registers an exit handler to unmount the filesystem on program exit
-    // creates a fuse handle
 
     fs.fuse = fuse_new(fs.ch, &args, &fusefs_oper, sizeof(fusefs_oper), NULL);
     fuse_opt_free_args(&args);
