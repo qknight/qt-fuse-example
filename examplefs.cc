@@ -60,17 +60,7 @@ int ExampleFS::Getattr(const char *path, struct stat *statbuf) {
 }
 
 int ExampleFS::Open(const char *path, struct fuse_file_info *fileInfo) {
-    printf(GREEN "ExampleFS::Open %s" RESET "\n", path);
-
-//     int fd;
-// 
-//     fd = open(path, fileInfo->flags);
-//     if (fd == -1)
-//         return -errno;
-// 
-//     fileInfo->fh = fd;
-//     return 0;
-    
+    printf(GREEN "ExampleFS::Open %s" RESET "\n", path);    
 
     if (strcmp(path, hello_path) != 0)
         return -ENOENT;
@@ -114,8 +104,14 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
 	 *
 	 * Introduced in version 2.9
 	 */
+// Also so wie ich das verstehe:
+// die geben dort nen Zeiger auf nen dynamischen Buffer rein dessen der dort in der Funktion erst mit "src" belegt wird.
+// und src ist halt ein auch in dieser Funktion initialisierter struct von fuse.
+// Und die versprechen halt, dass der Buffer dann dort existiert aber keine Daten kopiert wurden, wenn ichs richtig verstehe.
+// Also quasi: Alle Flags und infos und offsets gesetzt aber keine Daten kopiert.
+// Und wenn ich nich ganz falsch liege, dann liesst der quasi erst daten wenn du sie anfragst ... also eine etwas komische Art nen Buffer zu verwenden.
 int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size, off_t off, struct fuse_file_info *fileInfo) {
-    printf(GREEN "ExampleFS::Read_buf, path=%s, size=%u" RESET "\n", path, size);
+    printf(GREEN "ExampleFS::Read_buf, path=%s, size=%zu" RESET "\n", path, size);
     struct fuse_bufvec *src;
 
     (void) path;

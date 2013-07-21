@@ -22,6 +22,7 @@ class QFuse : public QObject {
     Q_OBJECT
 public:
     QFuse(QObject* parent = 0);
+    ~QFuse();
 signals:
     void sigShutDownComplete();
 public slots:

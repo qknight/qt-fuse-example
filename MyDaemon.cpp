@@ -8,6 +8,8 @@
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <unistd.h>
+#include "ColorCodes.hh"
+
 
 //needed to not get an undefined reference to static members
 int MyDaemon::sighupFd[2];
@@ -71,7 +73,7 @@ void MyDaemon::handleSigInt()
     char tmp;
     ::read(sigintFd[1], &tmp, sizeof(tmp));
 
-    qDebug() << "emit sigINT();";
+    qDebug() << MAGENTA << "emit sigINT();" << RESET;
 
     emit sigINT();
     snInt->setEnabled(true);
@@ -84,7 +86,7 @@ void MyDaemon::handleSigTerm()
     char tmp;
     ::read(sigtermFd[1], &tmp, sizeof(tmp));
 
-    qDebug() << "emit sigTerm()";
+    qDebug() << MAGENTA <<  "emit sigTerm()" << RESET;
 
     emit sigTERM();
     snTerm->setEnabled(true);
@@ -98,7 +100,7 @@ void MyDaemon::handleSigHup()
     ::read(sighupFd[1], &tmp, sizeof(tmp));
 
     emit sigHUP();
-    qDebug() << "emit sigHUP()";
+    qDebug() << MAGENTA <<  "emit sigHUP()" << RESET;
 
     snHup->setEnabled(true);
 }

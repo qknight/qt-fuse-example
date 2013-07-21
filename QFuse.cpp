@@ -36,7 +36,7 @@ static struct fuse_server {
 static void *fuse_thread(void *arg)
 {
     if(arg) {}
-    
+
     qDebug() << YELLOW << "creating fuse_loop_mt() now" << RESET;
 
     if(fuse_loop_mt(fs.fuse) < 0) {
@@ -47,7 +47,7 @@ static void *fuse_thread(void *arg)
 
     // this call will shutdown the qcoreapplication via the qfuse object
     QMetaObject::invokeMethod(QCoreApplication::instance(), "aboutToQuit", Qt::QueuedConnection);
-    
+
     return NULL;
 }
 
@@ -88,12 +88,16 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.access = wrap_access;
 }
 
+QFuse::~QFuse() {
+    qDebug() << YELLOW << __FUNCTION__ << RESET;
+}
+
 int QFuse::doWork() {
     set_rootdir(realpath(TUP_MNT, NULL));
 
     /* Need a garbage arg first to count as the process name */
 //     if(fuse_opt_add_arg(&args, "nix-fuse") < 0) {
-//         qDebug() << "error adding garbage arg";
+//         qDebug() <<  YELLOW << "error adding garbage arg" << RESET;
 //         return -1;
 //     }
 
@@ -108,7 +112,7 @@ int QFuse::doWork() {
         goto err_out;
     }
 
-    qDebug() << "fuse_mount worked";
+    qDebug() <<  YELLOW << "fuse_mount worked" << RESET;
 
     fs.fuse = fuse_new(fs.ch, &args, &fusefs_oper, sizeof(fusefs_oper), NULL);
     fuse_opt_free_args(&args);
@@ -117,7 +121,7 @@ int QFuse::doWork() {
         goto err_unmount;
     }
 
-    qDebug() << "fuse_new worked";
+    qDebug() << YELLOW << "fuse_new worked" << RESET;
 
     // registers the operations
     // calls either the single-threaded or the multi-threaded event loop
@@ -127,7 +131,7 @@ int QFuse::doWork() {
         goto err_unmount;
     }
 
-    qDebug() << "fuse server up and running ;-)";
+    qDebug() << YELLOW << "fuse server up and running ;-)" << RESET;
 
     return 0;
 

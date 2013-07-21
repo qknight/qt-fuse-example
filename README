@@ -1,3 +1,10 @@
+# todo
+- implement read_buf so that it works
+- add pthread (say read(..) to QThread communication)
+- on shutdown, fix this message:
+ - fuse: reading device: Bad file descriptor
+- fix bug where read_buf(..) is called but the -d switch states read(..) was called, probably some fuse bug
+
 # what is this?
 QFuse is a lightweight example for how to use FUSE and Qt together. 
 
@@ -30,11 +37,18 @@ mkdir dst
 ./QFuse 
 
 ## exit the daemon
-hit CTRL+C on the shell you started QFuse from
+on the shell you started QFuse from, hit:
+ - hit CTRL+C 
+or use:
+ - kill `pidof QFuse`
 
-in case it crashes, shoot the process with 
-kill -9 `pidof QFuse`
-fusermount -u mountpoint
+both commands will shutdown QFuse gracefully.
+
+in case it crashes, shoot the process with:
+  kill -9 `pidof QFuse`
+
+afterwards remote the mount:
+  fusermount -u mountpoint
  
 # documentation
 * http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/unix-signals.html
