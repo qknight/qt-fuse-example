@@ -103,3 +103,7 @@ int wrap_init(struct fuse_conn_info *conn) {
 int wrap_access(const char *path, int mode) {
     return ExampleFS::Instance()->Access(path,mode);
 }
+
+int wrap_fgetattr(const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo) {
+    return ExampleFS::Instance()->Fgetattr(path, statbuf, fileInfo);
+}

@@ -52,6 +52,7 @@ int wrap_releasedir(const char *path, struct fuse_file_info *fileInfo);
 int wrap_fsyncdir(const char *path, int datasync, struct fuse_file_info *fileInfo);
 int wrap_init(struct fuse_conn_info *conn);
 int wrap_access(const char *path, int mode); 
+int wrap_fgetattr (const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo);
 #ifdef __cplusplus
 }
 #endif

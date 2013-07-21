@@ -60,6 +60,7 @@ public:
     int Init(struct fuse_conn_info *conn);
     int Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo);
     int Access(const char *path, int mode);
+    int Fgetattr (const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo);
 
 };
 

@@ -86,6 +86,7 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.fsyncdir = wrap_fsyncdir;
     fusefs_oper.init = wrap_init;
     fusefs_oper.access = wrap_access;
+    fusefs_oper.fgetattr = wrap_fgetattr;
 }
 
 QFuse::~QFuse() {

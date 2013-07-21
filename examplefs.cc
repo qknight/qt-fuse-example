@@ -60,7 +60,7 @@ int ExampleFS::Getattr(const char *path, struct stat *statbuf) {
 }
 
 int ExampleFS::Open(const char *path, struct fuse_file_info *fileInfo) {
-    printf(GREEN "ExampleFS::Open %s" RESET "\n", path);    
+    printf(GREEN "ExampleFS::Open %s" RESET "\n", path);
 
     if (strcmp(path, hello_path) != 0)
         return -ENOENT;
@@ -88,22 +88,22 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
     return size;
 }
 
-	/** Store data from an open file in a buffer
-	 *
-	 * Similar to the read() method, but data is stored and
-	 * returned in a generic buffer.
-	 *
-	 * No actual copying of data has to take place, the source
-	 * file descriptor may simply be stored in the buffer for
-	 * later data transfer.
-	 *
-	 * The buffer must be allocated dynamically and stored at the
-	 * location pointed to by bufp.  If the buffer contains memory
-	 * regions, they too must be allocated using malloc().  The
-	 * allocated memory will be freed by the caller.
-	 *
-	 * Introduced in version 2.9
-	 */
+/** Store data from an open file in a buffer
+ *
+ * Similar to the read() method, but data is stored and
+ * returned in a generic buffer.
+ *
+ * No actual copying of data has to take place, the source
+ * file descriptor may simply be stored in the buffer for
+ * later data transfer.
+ *
+ * The buffer must be allocated dynamically and stored at the
+ * location pointed to by bufp.  If the buffer contains memory
+ * regions, they too must be allocated using malloc().  The
+ * allocated memory will be freed by the caller.
+ *
+ * Introduced in version 2.9
+ */
 // Also so wie ich das verstehe:
 // die geben dort nen Zeiger auf nen dynamischen Buffer rein dessen der dort in der Funktion erst mit "src" belegt wird.
 // und src ist halt ein auch in dieser Funktion initialisierter struct von fuse.
@@ -112,6 +112,7 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
 // Und wenn ich nich ganz falsch liege, dann liesst der quasi erst daten wenn du sie anfragst ... also eine etwas komische Art nen Buffer zu verwenden.
 int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size, off_t off, struct fuse_file_info *fileInfo) {
     printf(GREEN "ExampleFS::Read_buf, path=%s, size=%zu" RESET "\n", path, size);
+
     struct fuse_bufvec *src;
 
     (void) path;
@@ -122,8 +123,10 @@ int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size
 
     *src = FUSE_BUFVEC_INIT(size);
 
+    int fd = open("QFuse", O_RDONLY);
+
     src->buf[0].flags = FUSE_BUF_IS_FD | FUSE_BUF_FD_SEEK;
-    src->buf[0].fd = fileInfo->fh;
+    src->buf[0].fd = fd;// fileInfo->fh;
     src->buf[0].pos = off;
 
     *bufp = src;
@@ -296,3 +299,8 @@ int ExampleFS::Access(const char *path, int mode) {
     return 0;
 }
 
+
+int ExampleFS::Fgetattr(const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo) {
+    printf("Fgetattr(path=%s)\n", path);
+    return 0;
+}
