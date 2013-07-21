@@ -145,7 +145,6 @@ int ExampleFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
     filler(buf, hello_path + 1, NULL, 0);
-
     return 0;
 }
 
@@ -157,109 +156,101 @@ int ExampleFS::Init(struct fuse_conn_info *conn) {
 
 int ExampleFS::Getxattr(const char *path, const char *name, char *value, size_t size) {
     printf(GREEN "getxattr(path=%s, name=%s, size=%d" RESET "\n", path, name, (int)size);
-
     return 0;
 }
 
 int ExampleFS::Opendir(const char *path, struct fuse_file_info *fileInfo) {
     printf(GREEN "opendir(path=%s)" RESET "\n", path);
-
     return 0;
 }
 
 int ExampleFS::Statfs(const char *path, struct statvfs *statInfo) {
-    printf("statfs(path=%s)\n", path);
-
+    printf(GREEN "statfs(path=%s)" RESET "\n", path);
     return 0;
 }
 
-
 int ExampleFS::Readlink(const char *path, char *link, size_t size) {
-    printf("readlink(path=%s, link=%s, size=%d)\n", path, link, (int)size);
+    printf(GREEN "readlink(path=%s, link=%s, size=%d)" RESET "\n", path, link, (int)size);
     return 0;
 }
 
 int ExampleFS::Mknod(const char *path, mode_t mode, dev_t dev) {
-    printf("mknod(path=%s, mode=%d)\n", path, mode);
+    printf(GREEN "mknod(path=%s, mode=%d)" RESET "\n", path, mode);
     return 0;
 }
 
 int ExampleFS::Mkdir(const char *path, mode_t mode) {
-    printf("**mkdir(path=%s, mode=%d)\n", path, (int)mode);
+    printf(GREEN "**mkdir(path=%s, mode=%d)" RESET "\n", path, (int)mode);
     return 0;
 }
 
 int ExampleFS::Unlink(const char *path) {
-    printf("unlink(path=%s\n)", path);
+    printf(GREEN "unlink(path=%s)" RESET "\n", path);
     return 0;
 }
 
 int ExampleFS::Rmdir(const char *path) {
-    printf("rmkdir(path=%s\n)", path);
+    printf(GREEN "rmkdir(path=%s)" RESET "\n", path);
     return 0;
 }
 
 int ExampleFS::Symlink(const char *path, const char *link) {
-    printf("symlink(path=%s, link=%s)\n", path, link);
+    printf(GREEN "symlink(path=%s, link=%s)" RESET "\n", path, link);
     return 0;
 }
 
 int ExampleFS::Rename(const char *path, const char *newpath) {
-    printf("rename(path=%s, newPath=%s)\n", path, newpath);
+    printf(GREEN "rename(path=%s, newPath=%s)" RESET "\n", path, newpath);
     return 0;
 }
 
 int ExampleFS::Link(const char *path, const char *newpath) {
-    printf("link(path=%s, newPath=%s)\n", path, newpath);
+    printf(GREEN "link(path=%s, newPath=%s)" RESET "\n", path, newpath);
     return 0;
 }
 
 int ExampleFS::Chmod(const char *path, mode_t mode) {
-    printf("chmod(path=%s, mode=%d)\n", path, mode);
+    printf(GREEN "chmod(path=%s, mode=%d)" RESET "\n", path, mode);
     return 0;
 }
 
 int ExampleFS::Chown(const char *path, uid_t uid, gid_t gid) {
-    printf("chown(path=%s, uid=%d, gid=%d)\n", path, (int)uid, (int)gid);
+    printf(GREEN "chown(path=%s, uid=%d, gid=%d)" RESET "\n", path, (int)uid, (int)gid);
     return 0;
 }
 
 int ExampleFS::Truncate(const char *path, off_t newSize) {
-    printf("truncate(path=%s, newSize=%d\n", path, (int)newSize);
+    printf(GREEN "truncate(path=%s, newSize=%d" RESET "\n", path, (int)newSize);
     return 0;
 }
 
 int ExampleFS::Utime(const char *path, struct utimbuf *ubuf) {
-    printf("utime(path=%s)\n", path);
+    printf(GREEN "utime(path=%s)" RESET "\n", path);
     return 0;
 }
-
-
 
 int ExampleFS::Write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo) {
-    printf("write(path=%s, size=%d, offset=%d)\n", path, (int)size, (int)offset);
+    printf(GREEN "write(path=%s, size=%d, offset=%d)" RESET "\n", path, (int)size, (int)offset);
     return 0;
 }
 
-
-
 int ExampleFS::Flush(const char *path, struct fuse_file_info *fileInfo) {
-    printf("flush(path=%s)\n", path);
+    printf(GREEN "flush(path=%s)" RESET "\n", path);
     return 0;
 }
 
 int ExampleFS::Release(const char *path, struct fuse_file_info *fileInfo) {
-    printf("release(path=%s)\n", path);
+    printf(GREEN "release(path=%s)" RESET "\n", path);
     return 0;
 }
 
 int ExampleFS::Fsync(const char *path, int datasync, struct fuse_file_info *fi) {
-    printf("fsync(path=%s, datasync=%d\n", path, datasync);
+    printf(GREEN "fsync(path=%s, datasync=%d" RESET "\n", path, datasync);
     return 0;
 }
 
 int ExampleFS::Setxattr(const char *path, const char *name, const char *value, size_t size, int flags) {
-    printf("setxattr(path=%s, name=%s, value=%s, size=%d, flags=%d\n",
+    printf(GREEN "setxattr(path=%s, name=%s, value=%s, size=%d, flags=%d)" RESET "\n",
            path, name, value, (int)size, flags);
     return 0;
 }
@@ -267,40 +258,36 @@ int ExampleFS::Setxattr(const char *path, const char *name, const char *value, s
 
 
 int ExampleFS::Listxattr(const char *path, char *list, size_t size) {
-    printf("listxattr(path=%s, size=%d)\n", path, (int)size);
+    printf(GREEN "listxattr(path=%s, size=%d)" RESET "\n", path, (int)size);
     return 0;
 }
 
 int ExampleFS::Removexattr(const char *path, const char *name) {
-    printf("removexattry(path=%s, name=%s)\n", path, name);
+    printf(GREEN "removexattry(path=%s, name=%s)" RESET "\n", path, name);
     return 0;
 }
 
-
-
 int ExampleFS::Releasedir(const char *path, struct fuse_file_info *fileInfo) {
-    printf("releasedir(path=%s)\n", path);
+    printf(GREEN "releasedir(path=%s)" RESET "\n", path);
     return 0;
 }
 
 int ExampleFS::Fsyncdir(const char *path, int datasync, struct fuse_file_info *fileInfo) {
-    printf("fsyncdir(path=%s)\n", path);
+    printf(GREEN "fsyncdir(path=%s)" RESET "\n", path);
     return 0;
 }
 
-
 int ExampleFS::Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo) {
-    printf("truncate(path=%s, offset=%d)\n", path, (int)offset);
+    printf(GREEN "truncate(path=%s, offset=%d)" RESET "\n", path, (int)offset);
     return 0;
 }
 
 int ExampleFS::Access(const char *path, int mode) {
-    printf("access(path=%s)\n", path);
+    printf(GREEN "access(path=%s)" RESET "\n", path);
     return 0;
 }
 
-
 int ExampleFS::Fgetattr(const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo) {
-    printf("Fgetattr(path=%s)\n", path);
+    printf(GREEN "Fgetattr(path=%s)" RESET "\n", path);
     return 0;
 }
