@@ -1,9 +1,7 @@
 # todo
-- implement read_buf so that it works
 - add pthread (say read(..) to QThread communication)
 - on shutdown, fix this message:
  - fuse: reading device: Bad file descriptor
-- fix bug where read_buf(..) is called but the -d switch states read(..) was called, probably some fuse bug
 
 # what is this?
 QFuse is a lightweight example for how to use FUSE and Qt together. 

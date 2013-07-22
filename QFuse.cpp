@@ -50,10 +50,65 @@ static void *fuse_thread(void *arg)
 
     return NULL;
 }
+/*
+extern "C" {
+
+static struct fuse_operations fusefs_oper = {
+    .getattr = wrap_getattr,
+    .readlink = wrap_readlink,
+    .getdir = NULL,
+    .mknod = wrap_mknod,
+    .mkdir = wrap_mkdir,
+    .unlink = wrap_unlink,
+    .rmdir = wrap_rmdir,
+    .symlink = wrap_symlink,
+    .rename = wrap_rename,
+    .link = wrap_link,
+    .chmod = wrap_chmod,
+    .chown = wrap_chown,
+    .truncate = wrap_truncate,
+    .utime = wrap_utime,
+    .open = wrap_open,
+    .read = wrap_read,
+    .read_buf = wrap_read_buf,
+    .write = wrap_write,
+    .statfs = wrap_statfs,
+    .flush = wrap_flush,
+    .release = wrap_release,
+    .fsync = wrap_fsync,
+    .setxattr = wrap_setxattr,
+    .getxattr = wrap_getxattr,
+    .listxattr = wrap_listxattr,
+    .removexattr = wrap_removexattr,
+    .opendir = wrap_opendir,
+    .readdir = wrap_readdir,
+    .releasedir = wrap_releasedir,
+    .fsyncdir = wrap_fsyncdir,
+    .init = wrap_init,
+    .access = wrap_access,
+    .fgetattr = wrap_fgetattr,
+    .ftruncate = NULL,
+    .fgetattr = NULL,
+    .lock = NULL,
+    .utimens = NULL,
+    .bmap = NULL,
+    .flag_nullpath_ok = NULL,
+    .flag_nopath = NULL,
+    .flag_utime_omit_ok = NULL,
+    .flag_reserved = NULL,
+    .ioctl = NULL,
+    .poll = NULL,
+    .write_buf = NULL,
+    .read_buf = NULL,
+    .flock = NULL,
+};
+
+}*/
+
+
 
 
 QFuse::QFuse(QObject* parent) : QObject(parent) {
-
     fusefs_oper.getattr = wrap_getattr;
     fusefs_oper.readlink = wrap_readlink;
     fusefs_oper.getdir = NULL;
@@ -70,7 +125,7 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.utime = wrap_utime;
     fusefs_oper.open = wrap_open;
     fusefs_oper.read = wrap_read;
-    fusefs_oper.read_buf = wrap_read_buf;
+    fusefs_oper.read_buf = NULL;
     fusefs_oper.write = wrap_write;
     fusefs_oper.statfs = wrap_statfs;
     fusefs_oper.flush = wrap_flush;
@@ -87,6 +142,20 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.init = wrap_init;
     fusefs_oper.access = wrap_access;
     fusefs_oper.fgetattr = wrap_fgetattr;
+    fusefs_oper.ftruncate = NULL;
+    fusefs_oper.fgetattr = NULL;
+    fusefs_oper.lock = NULL;
+    fusefs_oper.utimens = NULL;
+    fusefs_oper.bmap = NULL;
+    fusefs_oper.flag_nullpath_ok = NULL;
+    fusefs_oper.flag_nopath = NULL;
+    fusefs_oper.flag_utime_omit_ok = NULL;
+    fusefs_oper.flag_reserved = NULL;
+    fusefs_oper.ioctl = NULL;
+    fusefs_oper.poll = NULL;
+    fusefs_oper.write_buf = NULL;
+    fusefs_oper.read_buf = NULL;
+    fusefs_oper.flock = NULL;
 }
 
 QFuse::~QFuse() {
