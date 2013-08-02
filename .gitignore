@@ -1,6 +1,6 @@
+qt-fuse-example
 *.o
 moc_*
 *kdev4*
 *kate-swp*
 Makefile
-QFuse

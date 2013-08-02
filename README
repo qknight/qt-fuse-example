@@ -1,25 +1,19 @@
 # todo
 - check for 'dst' folder
-- check that the QFuse client meets all FUSE QA requirements
+- check that the qt-fuse-example client meets all FUSE QA requirements
 - add pthread (say read(..) to QThread communication)
 
 # what is this?
-QFuse is a lightweight example for how to use FUSE and Qt together. 
+qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 
 
 # features
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
  * FUSE runs in its own thread/QThread and thus does not affect the main gui thread of Qt -
-   but pressing CTRL+C will shutdown the FUSE thread, unmounts the FS and cleanly exists QFuse.
- * 'fusermount -u dst' cleanly shutdowns QFuse
- * if 'dst' is still mounted but QFuse, which opened it crashed, QFuse will unmount it automatically on program start
- * in case 'dst' is still mounted on QFuse start it will unmount it automatically
- * a minimal read only FUSE FS so that one can see some files using 'ls -la' on the shell. in
-   one subdirectory there is a testfile which will keep the FUSE part of QFuse busy. it is used
-   as a test if CTRL+C can still shutdown when there are still 
-   pending FUSE syscalls like:
-    * read(..)
-    * readdir(..)
-   in progress.
+   but pressing CTRL+C will shutdown the FUSE thread, unmounts the FS and cleanly exists qt-fuse-example.
+ * 'fusermount -u dst' cleanly shutdowns qt-fuse-example
+ * if 'dst' is still mounted but qt-fuse-example, which opened it crashed, qt-fuse-example will unmount it automatically on program start
+ * in case 'dst' is still mounted on qt-fuse-example start it will unmount it automatically
+ * a minimal read only FUSE FS so that one can see some files using 'ls -la' on the shell. 
 
 # dependencies
  * Qt 4.x
@@ -34,21 +28,22 @@ QFuse is a lightweight example for how to use FUSE and Qt together.
 ## start the software (from a shell)
 you need the hardcoded 'dst' path:
 mkdir dst
-./QFuse 
+./qt-fuse-example 
 
 ## exit the daemon
-on the shell you started QFuse from, hit:
+on the shell you started qt-fuse-example from, hit:
  - hit CTRL+C 
-or use:
- - kill `pidof QFuse`
 
-both commands will shutdown QFuse gracefully.
+or use:
+ - kill `pidof qt-fuse-example`
+
+both commands will shutdown qt-fuse-example gracefully.
 
 in case it crashes, shoot the process with:
-  kill -9 `pidof QFuse`
+  kill -9 `pidof qt-fuse-example`
 
 afterwards remote the mount:
-  fusermount -u mountpoint
+  fusermount -u dst
  
 # documentation
 * http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libqt4/unix-signals.html

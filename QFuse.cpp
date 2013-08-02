@@ -13,6 +13,7 @@
 #include <QCoreApplication>
 #include <QMetaObject>
 #include "ColorCodes.hh"
+#include <iostream>
 
 #include "wrap.hh"
 
@@ -38,13 +39,14 @@ static void *fuse_thread(void *arg)
 {
     if(arg) {}
 
-    qDebug() << YELLOW << "creating fuse_loop_mt() now" << RESET;
+    std::cout << YELLOW << "creating fuse_loop_mt() now" << RESET << std::endl;
 
+    //FIXME have to check if this code
     if(fuse_loop_mt(fs.fuse) < 0) {
         perror("fuse_loop_mt");
         fs.failed = 1;
     }
-    qDebug() << YELLOW << "exiting fuse_loop_mt() now" << RESET;
+    std::cout << YELLOW << "exiting fuse_loop_mt() now" << RESET << std::endl;
 
     // this call will shutdown the qcoreapplication via the qfuse object
     QMetaObject::invokeMethod(QCoreApplication::instance(), "aboutToQuit", Qt::QueuedConnection);
@@ -59,10 +61,10 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.init = wrap_init;
     fusefs_oper.getattr = wrap_getattr;
     fusefs_oper.readlink = wrap_readlink;
-    fusefs_oper.open = wrap_open;
     fusefs_oper.read = wrap_read;
     fusefs_oper.opendir = wrap_opendir;
     fusefs_oper.readdir = wrap_readdir;
+//     fusefs_oper.open = wrap_open;
     
     /*
     fusefs_oper.getdir = NULL;
@@ -135,7 +137,6 @@ int QFuse::doWork() {
         perror("pthread_create");
         goto err_unmount;
     }
-
     qDebug() << YELLOW << "fuse server up and running ;-)" << RESET;
 
     return 0;
@@ -143,29 +144,22 @@ int QFuse::doWork() {
 err_unmount:
     fuse_unmount(TUP_MNT, fs.ch);
 err_out:
-    fprintf(stderr, "tup error: Unable to mount FUSE on %s\n", TUP_MNT);
+    qDebug() << RED << QString("tup error: Unable to mount FUSE on %1").arg(TUP_MNT) << RESET;
     return -1;
 }
 
 
 int QFuse::shutDown() {
-    qDebug() << YELLOW <<__FUNCTION__ << RESET;
-
-//     fuse_session_destroy(fs.se);
-    
-    qDebug() << YELLOW << __FUNCTION__ << " fuse_unmount" << RESET;
+    qDebug() << YELLOW << __FUNCTION__ << "fuse_unmount" << RESET;
     fuse_unmount(TUP_MNT, fs.ch);
 
-    qDebug() << YELLOW << __FUNCTION__ << " calling pthread_join()" << RESET;
+    qDebug() << YELLOW << __FUNCTION__ << "calling pthread_join()" << RESET;
     pthread_join(fs.pid, NULL);
-    qDebug() << YELLOW << __FUNCTION__ << " pthread_joined(;-)" << RESET;
-
-    qDebug() << YELLOW << __FUNCTION__ << " fuse_exit" << RESET;
-    fuse_exit(fs.fuse);
 
     fs.fuse = NULL;
     memset(&fs, 0, sizeof(fs));
-
+    
+    qDebug() << YELLOW << __FUNCTION__ << "emit sigShutDownComplete()" << RESET;
     emit sigShutDownComplete();
 
     return 0;
