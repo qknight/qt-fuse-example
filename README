@@ -1,7 +1,7 @@
 # todo
+- check for 'dst' folder
+- check that the QFuse client meets all FUSE QA requirements
 - add pthread (say read(..) to QThread communication)
-- on shutdown, fix this message:
- - fuse: reading device: Bad file descriptor
 
 # what is this?
 QFuse is a lightweight example for how to use FUSE and Qt together. 
@@ -11,6 +11,7 @@ QFuse is a lightweight example for how to use FUSE and Qt together.
  * FUSE runs in its own thread/QThread and thus does not affect the main gui thread of Qt -
    but pressing CTRL+C will shutdown the FUSE thread, unmounts the FS and cleanly exists QFuse.
  * 'fusermount -u dst' cleanly shutdowns QFuse
+ * if 'dst' is still mounted but QFuse, which opened it crashed, QFuse will unmount it automatically on program start
  * in case 'dst' is still mounted on QFuse start it will unmount it automatically
  * a minimal read only FUSE FS so that one can see some files using 'ls -la' on the shell. in
    one subdirectory there is a testfile which will keep the FUSE part of QFuse busy. it is used
@@ -31,6 +32,7 @@ QFuse is a lightweight example for how to use FUSE and Qt together.
 # how to use 
 
 ## start the software (from a shell)
+you need the hardcoded 'dst' path:
 mkdir dst
 ./QFuse 
 
