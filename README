@@ -11,6 +11,8 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
 
 # features
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
+   - this is the primary reason why fuse_main(..) can't be used since one needs to inject into the POSIX signal handlers:
+     QFuse.cpp - QFuse::shutDown() is called when a POSIX signal arrives, doing a clean shutdown
  * FUSE runs in its own FUSE-eventloop (fuse_loop_mt) started from a QThread in QFuse.cpp, thus both loops are isolated from each other
  * pressing CTRL+C will shutdown the FUSE-eventloop, unmounts the FS and cleanly exists qt-fuse-example.
  * 'fusermount -u dst' cleanly shuts down the FUSE-eventloop and also cleanly exists the qt-fuse-example
