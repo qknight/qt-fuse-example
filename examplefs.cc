@@ -82,8 +82,9 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
         if (offset + size > len)
             size = len - offset;
         memcpy(buf, hello_str + offset, size);
-    } else
+    } else {
         size = 0;
+    }
 
     return size;
 }

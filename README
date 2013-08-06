@@ -1,23 +1,27 @@
 # todo
 - check for 'dst' folder
+ - exists?
+ - already mounted?
 - check that the qt-fuse-example client meets all FUSE QA requirements
-- add pthread (say read(..) to QThread communication)
+ - remove this error message when doing shutdown: "fuse: reading device: Bad file descriptor"
+- add pthread (say read(..) to QThread communication) example
 
 # what is this?
 qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 
 
 # features
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
- * FUSE runs in its own thread/QThread and thus does not affect the main gui thread of Qt -
-   but pressing CTRL+C will shutdown the FUSE thread, unmounts the FS and cleanly exists qt-fuse-example.
- * 'fusermount -u dst' cleanly shutdowns qt-fuse-example
+ * FUSE runs in its own FUSE-eventloop (fuse_loop_mt) started from a QThread in QFuse.cpp, thus both loops are isolated from each other
+ * pressing CTRL+C will shutdown the FUSE-eventloop, unmounts the FS and cleanly exists qt-fuse-example.
+ * 'fusermount -u dst' cleanly shuts down the FUSE-eventloop and also cleanly exists the qt-fuse-example
  * if 'dst' is still mounted but qt-fuse-example, which opened it crashed, qt-fuse-example will unmount it automatically on program start
- * in case 'dst' is still mounted on qt-fuse-example start it will unmount it automatically
- * a minimal read only FUSE FS so that one can see some files using 'ls -la' on the shell. 
+ * this implementation features the hello.c minimal read only FUSE FS coming with the fuse library source
+   - there exists only one file called 'hello'
+   - and it contains "Hello World!"
 
 # dependencies
  * Qt 4.x
- * FUSE library
+ * FUSE library 2.9.x
 
 # how to compile
  * qmake
