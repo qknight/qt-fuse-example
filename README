@@ -5,7 +5,10 @@
 - check that the qt-fuse-example client meets all FUSE QA requirements
  - remove this error message when doing shutdown: "fuse: reading device: Bad file descriptor"
 - add pthread (say read(..) to QThread communication) example
-
+- also fix the bug: 
+  fuse: reading device: Bad file descriptor
+  see: fuse_kern_chan.c::static int fuse_kern_chan_receive(struct fuse_chan **chp, char *buf, size_t size)
+  
 # what is this?
 qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 
 

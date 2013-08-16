@@ -16,8 +16,7 @@
 #include <iostream>
 
 #include "wrap.hh"
-
-// #include <fuse_lowlevel.h>
+#include <fuse/fuse_lowlevel.h>
 
 // FIXME don't make this hardcoded
 #define TUP_MNT "dst"
@@ -150,6 +149,10 @@ err_out:
 
 
 int QFuse::shutDown() {
+    //FIXME i guess i need to destroy the session first; but everything i tried failed with segfaults... *arg*
+//     qDebug() << YELLOW << __FUNCTION__ << "fuse_session_destroy" << RESET;
+//     fuse_session_destroy (fuse_get_session(fs.fuse));
+  
     qDebug() << YELLOW << __FUNCTION__ << "fuse_unmount" << RESET;
     fuse_unmount(TUP_MNT, fs.ch);
 
