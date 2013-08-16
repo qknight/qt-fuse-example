@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
     // fusermount -u dst will trigger this slot at qFuse
     QObject::connect(&a, SIGNAL(aboutToQuit()), &qFuse, SLOT(shutDown()));
 
-    
     if (setup_unix_signal_handlers() != 0) {
         qFatal("setup_unix_signal_handlers couldn't install the signal handles properly");
         exit(1);

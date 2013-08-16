@@ -1,13 +1,12 @@
 # todo
-- check for 'dst' folder
- - exists?
- - already mounted?
+- don't make things hardcoded, support:
+ - single vs multithreaded
+ - mountpoint via command line
+ - enabled/disable debug
 - check that the qt-fuse-example client meets all FUSE QA requirements
- - remove this error message when doing shutdown: "fuse: reading device: Bad file descriptor"
-- add pthread (say read(..) to QThread communication) example
-- also fix the bug: 
-  fuse: reading device: Bad file descriptor
-  see: fuse_kern_chan.c::static int fuse_kern_chan_receive(struct fuse_chan **chp, char *buf, size_t size)
+ - check for errors when doing fuse function calls
+ - [x] check that all required functions are called on shutdown
+- provide an example where to fuse pthread uses signals+slots to communicate with the read(..) implementation of the fuse-FS
   
 # what is this?
 qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 

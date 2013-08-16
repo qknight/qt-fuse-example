@@ -31,6 +31,7 @@ static struct fuse_server {
     struct fuse *fuse;
     struct fuse_chan *ch;
     int failed;
+    int running;
 } fs;
 
 
@@ -40,7 +41,6 @@ static void *fuse_thread(void *arg)
 
     std::cout << YELLOW << "creating fuse_loop_mt() now" << RESET << std::endl;
 
-    //FIXME have to check if this code
     if(fuse_loop_mt(fs.fuse) < 0) {
         perror("fuse_loop_mt");
         fs.failed = 1;
@@ -64,7 +64,7 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     fusefs_oper.opendir = wrap_opendir;
     fusefs_oper.readdir = wrap_readdir;
 //     fusefs_oper.open = wrap_open;
-    
+
     /*
     fusefs_oper.getdir = NULL;
     fusefs_oper.mknod = wrap_mknod;
@@ -99,6 +99,7 @@ QFuse::~QFuse() {
 }
 
 int QFuse::doWork() {
+    fs.running = 1;
     set_rootdir(realpath(TUP_MNT, NULL));
 
     /* Need a garbage arg first to count as the process name */
@@ -143,30 +144,44 @@ int QFuse::doWork() {
 err_unmount:
     fuse_unmount(TUP_MNT, fs.ch);
 err_out:
+    fs.running = 0;
     qDebug() << RED << QString("tup error: Unable to mount FUSE on %1").arg(TUP_MNT) << RESET;
+
+    emit sigShutDownComplete();
+
     return -1;
 }
 
 
 int QFuse::shutDown() {
-    //FIXME i guess i need to destroy the session first; but everything i tried failed with segfaults... *arg*
-//     qDebug() << YELLOW << __FUNCTION__ << "fuse_session_destroy" << RESET;
-//     fuse_session_destroy (fuse_get_session(fs.fuse));
-  
-    qDebug() << YELLOW << __FUNCTION__ << "fuse_unmount" << RESET;
+    if (!fs.running) {
+//           qDebug() << YELLOW << __FUNCTION__ << "already called, won't be executed twice" << RESET;
+        return 0;
+    }
+    fs.running = 0;
+
+    qDebug() << YELLOW << __FUNCTION__ << "fuse_session_exit" << RESET;
+    fuse_session_exit (fuse_get_session(fs.fuse));
+
+    qDebug() << YELLOW << __FUNCTION__ << "fuse_unmount()" << RESET;
     fuse_unmount(TUP_MNT, fs.ch);
 
     qDebug() << YELLOW << __FUNCTION__ << "calling pthread_join()" << RESET;
     pthread_join(fs.pid, NULL);
 
+// FIXME: TUP does not implement this and altough it does not crash is there benefit?
+//     qDebug() << YELLOW << __FUNCTION__ << "calling fuse_destroy()" << RESET;
+//     fuse_destroy(fs.fuse);
+
     fs.fuse = NULL;
     memset(&fs, 0, sizeof(fs));
-    
+
     qDebug() << YELLOW << __FUNCTION__ << "emit sigShutDownComplete()" << RESET;
     emit sigShutDownComplete();
 
     return 0;
 }
+
 
 
 
