@@ -31,6 +31,8 @@ public slots:
 private:
     struct fuse_operations fusefs_oper;
     int fuse_stat;
+    int argc;
+    const char** argv;
 };
 
 #endif

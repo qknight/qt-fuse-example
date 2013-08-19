@@ -17,13 +17,7 @@
 
 #include "wrap.hh"
 #include <fuse/fuse_lowlevel.h>
-
-// FIXME don't make this hardcoded
-#define TUP_MNT "dst"
-
-// FIXME don't make this parameters hardcoded
-int argc = 2;
-char *argv[] = {"qfuse", "-d"};
+#include <string.h>
 
 
 static struct fuse_server {
@@ -32,6 +26,9 @@ static struct fuse_server {
     struct fuse_chan *ch;
     int failed;
     int running;
+    char *mountpoint;
+    int multithreaded;
+    int foreground;
 } fs;
 
 
@@ -39,13 +36,21 @@ static void *fuse_thread(void *arg)
 {
     if(arg) {}
 
-    std::cout << YELLOW << "creating fuse_loop_mt() now" << RESET << std::endl;
-
-    if(fuse_loop_mt(fs.fuse) < 0) {
-        perror("fuse_loop_mt");
-        fs.failed = 1;
+    if (fs.multithreaded) {
+        std::cout << YELLOW << __FUNCTION__ << ": fuse_loop_mt()" << RESET << std::endl;
+        if (fuse_loop_mt(fs.fuse) < 0) {
+            perror("problem in fuse_loop_mt");
+            fs.failed = 1;
+        }
+        std::cout << YELLOW << __FUNCTION__ << " exiting fuse_loop() now" << RESET << std::endl;
+    } else {
+        std::cout << YELLOW << __FUNCTION__ << ": fuse_loop()" << RESET << std::endl;
+        if (fuse_loop(fs.fuse) < 0) {
+            perror("problem in fuse_loop");
+            fs.failed = 1;
+        }
+        std::cout << YELLOW << __FUNCTION__ << " exiting fuse_loop_mt() now" << RESET << std::endl;
     }
-    std::cout << YELLOW << "exiting fuse_loop_mt() now" << RESET << std::endl;
 
     // this call will shutdown the qcoreapplication via the qfuse object
     QMetaObject::invokeMethod(QCoreApplication::instance(), "aboutToQuit", Qt::QueuedConnection);
@@ -54,18 +59,23 @@ static void *fuse_thread(void *arg)
 }
 
 
-
 QFuse::QFuse(QObject* parent) : QObject(parent) {
+    // init the fs struct
+    memset(&fs, 0, sizeof(fs));
+    fs.running = 1;
+
+    // init fusefs_oper struct
     memset(&fusefs_oper, 0, sizeof(fusefs_oper));
+
     fusefs_oper.init = wrap_init;
     fusefs_oper.getattr = wrap_getattr;
     fusefs_oper.readlink = wrap_readlink;
     fusefs_oper.read = wrap_read;
     fusefs_oper.opendir = wrap_opendir;
     fusefs_oper.readdir = wrap_readdir;
-//     fusefs_oper.open = wrap_open;
 
     /*
+    fusefs_oper.open = wrap_open;
     fusefs_oper.getdir = NULL;
     fusefs_oper.mknod = wrap_mknod;
     fusefs_oper.mkdir = wrap_mkdir;
@@ -94,32 +104,57 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
     */
 }
 
+
 QFuse::~QFuse() {
-    qDebug() << YELLOW << __FUNCTION__ << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << RESET;
 }
 
+
 int QFuse::doWork() {
-    fs.running = 1;
-    set_rootdir(realpath(TUP_MNT, NULL));
+    QStringList l = QCoreApplication::arguments ();
+    argc = l.size();
+    argv = new const char*[argc];
+    unsigned index = 0;
+    foreach (QString s, l) {
+        char* tmp = QFile::encodeName(s).data();
+        char* z = malloc(strlen(tmp)+1);
+        memcpy(z, tmp, strlen(tmp)+1);
+        argv[index] = z;
+//         std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
+        index++;
+    }
 
-    /* Need a garbage arg first to count as the process name */
-//     if(fuse_opt_add_arg(&args, "nix-fuse") < 0) {
-//         qDebug() <<  YELLOW << "error adding garbage arg" << RESET;
-//         return -1;
-//     }
-
-    // parses command line options (-d -s and -h)
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-    fuse_unmount(TUP_MNT, fs.ch);
+    int res;
 
-    fs.ch = fuse_mount(TUP_MNT, &args);
+    // parses command line options (mountpoint, -s, foreground(which is ignored) and -d as well as other fuse specific parameters)
+    res = fuse_parse_cmdline(&args, &fs.mountpoint, &fs.multithreaded, &fs.foreground);
+    if (res == -1) {
+        std::cout << RED << __FUNCTION__ << " error on fuse_parse_cmdline" << RESET << std::endl;
+        goto err_out;
+    }
+
+    if (!fs.mountpoint) {
+        fs.mountpoint = "dst";
+        std::cout << BOLDRED << "hint: no mountpoint was passed, using this default: '" << fs.mountpoint << "'" << RESET << std::endl;
+    }
+
+    std::cout << YELLOW << "mountpoint: " << fs.mountpoint << RESET << std::endl;
+    std::cout << YELLOW << "multithreaded: " << fs.multithreaded << RESET << std::endl;
+
+    set_rootdir(realpath(fs.mountpoint, NULL));
+
+    //to remove leftovers from previous crashes
+    fuse_unmount(fs.mountpoint, fs.ch);
+
+    fs.ch = fuse_mount(fs.mountpoint, &args);
     if(!fs.ch) {
         perror("fuse_mount");
         goto err_out;
     }
 
-    qDebug() <<  YELLOW << "fuse_mount worked" << RESET;
+    qDebug().nospace() <<  YELLOW << "fuse_mount worked" << RESET;
 
     fs.fuse = fuse_new(fs.ch, &args, &fusefs_oper, sizeof(fusefs_oper), NULL);
     fuse_opt_free_args(&args);
@@ -128,7 +163,7 @@ int QFuse::doWork() {
         goto err_unmount;
     }
 
-    qDebug() << YELLOW << "fuse_new worked" << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_new worked" << RESET;
 
     // registers the operations
     // calls either the single-threaded or the multi-threaded event loop
@@ -137,15 +172,15 @@ int QFuse::doWork() {
         perror("pthread_create");
         goto err_unmount;
     }
-    qDebug() << YELLOW << "fuse server up and running ;-)" << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse server up and running ;-)" << RESET;
 
     return 0;
 
 err_unmount:
-    fuse_unmount(TUP_MNT, fs.ch);
+    fuse_unmount(fs.mountpoint, fs.ch);
+    qDebug().nospace() << RED << QString("fuse error: Unable to mount FUSE on directory %1").arg(fs.mountpoint).toStdString().c_str() << RESET;
 err_out:
     fs.running = 0;
-    qDebug() << RED << QString("tup error: Unable to mount FUSE on %1").arg(TUP_MNT) << RESET;
 
     emit sigShutDownComplete();
 
@@ -155,32 +190,29 @@ err_out:
 
 int QFuse::shutDown() {
     if (!fs.running) {
-//           qDebug() << YELLOW << __FUNCTION__ << "already called, won't be executed twice" << RESET;
+//           qDebug().nospace() << YELLOW << __FUNCTION__ << " already called, won't be executed twice" << RESET;
         return 0;
     }
     fs.running = 0;
 
-    qDebug() << YELLOW << __FUNCTION__ << "fuse_session_exit" << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_session_exit" << RESET;
     fuse_session_exit (fuse_get_session(fs.fuse));
 
-    qDebug() << YELLOW << __FUNCTION__ << "fuse_unmount()" << RESET;
-    fuse_unmount(TUP_MNT, fs.ch);
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_unmount()" << RESET;
+    fuse_unmount(fs.mountpoint, fs.ch);
 
-    qDebug() << YELLOW << __FUNCTION__ << "calling pthread_join()" << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " calling pthread_join()" << RESET;
     pthread_join(fs.pid, NULL);
-
-// FIXME: TUP does not implement this and altough it does not crash is there benefit?
-//     qDebug() << YELLOW << __FUNCTION__ << "calling fuse_destroy()" << RESET;
-//     fuse_destroy(fs.fuse);
 
     fs.fuse = NULL;
     memset(&fs, 0, sizeof(fs));
 
-    qDebug() << YELLOW << __FUNCTION__ << "emit sigShutDownComplete()" << RESET;
+    qDebug().nospace() << YELLOW << __FUNCTION__ << " emit sigShutDownComplete()" << RESET;
     emit sigShutDownComplete();
 
     return 0;
 }
+
 
 
 

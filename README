@@ -1,12 +1,9 @@
 # todo
-- don't make things hardcoded, support:
- - single vs multithreaded
- - mountpoint via command line
- - enabled/disable debug
+- make clean; make (fix all warnings)
 - check that the qt-fuse-example client meets all FUSE QA requirements
+ - check all printf/cout/qDebug lines
  - check for errors when doing fuse function calls
  - [x] check that all required functions are called on shutdown
-- provide an example where to fuse pthread uses signals+slots to communicate with the read(..) implementation of the fuse-FS
   
 # what is this?
 qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 
@@ -15,13 +12,18 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
    - this is the primary reason why fuse_main(..) can't be used since one needs to inject into the POSIX signal handlers:
      QFuse.cpp - QFuse::shutDown() is called when a POSIX signal arrives, doing a clean shutdown
- * FUSE runs in its own FUSE-eventloop (fuse_loop_mt) started from a QThread in QFuse.cpp, thus both loops are isolated from each other
+ * FUSE runs in its own FUSE-eventloop (f
+ use_loop/fuse_loop_mt) started from a QThread in QFuse.cpp, thus both loops are isolated from each other
  * pressing CTRL+C will shutdown the FUSE-eventloop, unmounts the FS and cleanly exists qt-fuse-example.
- * 'fusermount -u dst' cleanly shuts down the FUSE-eventloop and also cleanly exists the qt-fuse-example
+ * 'fusermount -u dst' cleanly shuts down the FUSE-eventloop and also cleandly exists the qt-fuse-example
  * if 'dst' is still mounted but qt-fuse-example, which opened it crashed, qt-fuse-example will unmount it automatically on program start
  * this implementation features the hello.c minimal read only FUSE FS coming with the fuse library source
    - there exists only one file called 'hello'
    - and it contains "Hello World!"
+ * command line arguments are parsed using fuse_parse_cmdline(..)
+ - '-s' single vs multithreaded
+ - '-d' enabled/disable debug
+ - mountpoint (still 'mnt' is a default if nothing is given)
 
 # dependencies
  * Qt 4.x
@@ -37,6 +39,13 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
 you need the hardcoded 'dst' path:
 mkdir dst
 ./qt-fuse-example 
+
+or
+
+usage:
+  ./qt-fuse-example --help  
+example: 
+  ./qt-fuse-example dst -d -s
 
 ## exit the daemon
 on the shell you started qt-fuse-example from, hit:

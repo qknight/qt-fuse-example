@@ -73,7 +73,7 @@ void MyDaemon::handleSigInt()
     char tmp;
     ::read(sigintFd[1], &tmp, sizeof(tmp));
 
-    qDebug() << MAGENTA << "emit sigINT();" << RESET;
+    qDebug().nospace() << MAGENTA << "emit sigINT();" << RESET;
 
     emit sigINT();
     snInt->setEnabled(true);
@@ -86,7 +86,7 @@ void MyDaemon::handleSigTerm()
     char tmp;
     ::read(sigtermFd[1], &tmp, sizeof(tmp));
 
-    qDebug() << MAGENTA <<  "emit sigTerm()" << RESET;
+    qDebug().nospace() << MAGENTA <<  "emit sigTerm()" << RESET;
 
     emit sigTERM();
     snTerm->setEnabled(true);
@@ -100,7 +100,7 @@ void MyDaemon::handleSigHup()
     ::read(sighupFd[1], &tmp, sizeof(tmp));
 
     emit sigHUP();
-    qDebug() << MAGENTA <<  "emit sigHUP()" << RESET;
+    qDebug().nospace() << MAGENTA <<  "emit sigHUP()" << RESET;
 
     snHup->setEnabled(true);
 }
