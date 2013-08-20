@@ -122,7 +122,7 @@ int QFuse::doWork() {
         char* z = (char*) malloc(strlen(tmp)+1);
         memcpy(z, tmp, strlen(tmp)+1);
         argv[index] = z;
-//         std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
+        std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
         index++;
     }
 
@@ -137,7 +137,11 @@ int QFuse::doWork() {
         goto err_out;
     }
 
-
+//     if (!fs.mountpoint) {
+      //FIXME what is different to hello.c example? i also pass no arguments yet i get no error message from the fuse library!?
+//         std::cout << RED << "no mountpoint was given, exiting" << RESET << std::endl;
+//         goto noerr_out;
+//     }
 
     std::cout << YELLOW << "mountpoint: " << fs.mountpoint << RESET << std::endl;
     if (fs.multithreaded)
@@ -152,10 +156,11 @@ int QFuse::doWork() {
 
     fs.ch = fuse_mount(fs.mountpoint, &args);
     if(!fs.ch) {
-        perror("fuse_mount");
+//         perror("fuse_mount");
         goto err_out;
     }
 
+    
     qDebug().nospace() <<  YELLOW << "fuse_mount worked" << RESET;
 
     fs.fuse = fuse_new(fs.ch, &args, &fusefs_oper, sizeof(fusefs_oper), NULL);
