@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QMetaObject>
+#include <QTimer>
 #include "ColorCodes.hh"
 #include <iostream>
 
@@ -106,18 +107,19 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
 
 
 QFuse::~QFuse() {
-    qDebug().nospace() << YELLOW << __FUNCTION__ << RESET;
+//     qDebug().nospace() << YELLOW << __FUNCTION__ << RESET;
 }
 
 
 int QFuse::doWork() {
-    QStringList l = QCoreApplication::arguments ();
+    QStringList l = QCoreApplication::arguments();
     argc = l.size();
     argv = new const char*[argc];
     unsigned index = 0;
-    foreach (QString s, l) {
-        char* tmp = QFile::encodeName(s).data();
-        char* z = malloc(strlen(tmp)+1);
+    foreach (const QString s, l) {
+        QByteArray b = QFile::encodeName(s);
+        char* tmp = b.data();
+        char* z = (char*) malloc(strlen(tmp)+1);
         memcpy(z, tmp, strlen(tmp)+1);
         argv[index] = z;
 //         std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
@@ -135,13 +137,13 @@ int QFuse::doWork() {
         goto err_out;
     }
 
-    if (!fs.mountpoint) {
-        fs.mountpoint = "dst";
-        std::cout << BOLDRED << "hint: no mountpoint was passed, using this default: '" << fs.mountpoint << "'" << RESET << std::endl;
-    }
+
 
     std::cout << YELLOW << "mountpoint: " << fs.mountpoint << RESET << std::endl;
-    std::cout << YELLOW << "multithreaded: " << fs.multithreaded << RESET << std::endl;
+    if (fs.multithreaded)
+        std::cout << YELLOW << "running multithreaded" << RESET << std::endl;
+    else
+        std::cout << YELLOW << "runnig singlethreaded" << RESET << std::endl;
 
     set_rootdir(realpath(fs.mountpoint, NULL));
 
@@ -181,10 +183,12 @@ err_unmount:
     qDebug().nospace() << RED << QString("fuse error: Unable to mount FUSE on directory %1").arg(fs.mountpoint).toStdString().c_str() << RESET;
 err_out:
     fs.running = 0;
-
     emit sigShutDownComplete();
-
     return -1;
+noerr_out:
+    fs.running = 0;
+    emit sigShutDownComplete();
+    return 0;
 }
 
 
@@ -212,6 +216,7 @@ int QFuse::shutDown() {
 
     return 0;
 }
+
 
 
 

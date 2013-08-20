@@ -1,4 +1,8 @@
 # todo
+- doWork(): use the return value
+- output is to small, there is something missing compared to hello example
+  --help
+  --version
 - make clean; make (fix all warnings)
 - check that the qt-fuse-example client meets all FUSE QA requirements
  - check all printf/cout/qDebug lines
@@ -10,20 +14,21 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
 
 # features
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
-   - this is the primary reason why fuse_main(..) can't be used since one needs to inject into the POSIX signal handlers:
-     QFuse.cpp - QFuse::shutDown() is called when a POSIX signal arrives, doing a clean shutdown
- * FUSE runs in its own FUSE-eventloop (f
- use_loop/fuse_loop_mt) started from a QThread in QFuse.cpp, thus both loops are isolated from each other
- * pressing CTRL+C will shutdown the FUSE-eventloop, unmounts the FS and cleanly exists qt-fuse-example.
- * 'fusermount -u dst' cleanly shuts down the FUSE-eventloop and also cleandly exists the qt-fuse-example
- * if 'dst' is still mounted but qt-fuse-example, which opened it crashed, qt-fuse-example will unmount it automatically on program start
+   - this is the primary reason why fuse_main(..) can't be used since we have to wiretapp the POSIX 
+     signal handlers to make them available in the Qt context: 
+        QFuse.cpp - QFuse::shutDown() is called when a POSIX signal arrives, doing a clean shutdown
+ * FUSE runs in its own FUSE-eventloop (fuse_loop/fuse_loop_mt). either of the two loops, depending if '-s' is passed is
+   started from a seperate QThread in QFuse.cpp, thus the Qt eventloop and the FUSE eventloop are isolated from each other
+ * pressing CTRL+C will shutdown the FUSE-eventloop, unmounts the FS and cleanly exists qt-fuse-example
+ * 'fusermount -u dst' also shutsdown the FUSE-eventloop and will also cleanly exit the qt-fuse-example
+ * if 'dst' is still mounted, say after qt-fuse-example crashed, qt-fuse-example will unmount it automatically on program start
  * this implementation features the hello.c minimal read only FUSE FS coming with the fuse library source
    - there exists only one file called 'hello'
    - and it contains "Hello World!"
  * command line arguments are parsed using fuse_parse_cmdline(..)
  - '-s' single vs multithreaded
  - '-d' enabled/disable debug
- - mountpoint (still 'mnt' is a default if nothing is given)
+ - '--help' and '--version' for more details on FUSE command line parameters
 
 # dependencies
  * Qt 4.x
@@ -36,9 +41,8 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
 # how to use 
 
 ## start the software (from a shell)
-you need the hardcoded 'dst' path:
-mkdir dst
-./qt-fuse-example 
+  mkdir dst
+  ./qt-fuse-example 
 
 or
 
