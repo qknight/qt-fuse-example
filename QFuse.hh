@@ -9,13 +9,13 @@
 
 
 class CppSignalWrapper: public QObject {
-  Q_OBJECT
-public: 
-  void fuseExited() {
-    emit fuseExitedSig();
-  }
-signals: 
-      void fuseExitedSig();
+    Q_OBJECT
+public:
+    void fuseExited() {
+        emit fuseExitedSig();
+    }
+signals:
+    void fuseExitedSig();
 };
 
 class QFuse : public QObject {
@@ -26,13 +26,13 @@ public:
 signals:
     void sigShutDownComplete();
 public slots:
-    int doWork();
+    void doWork();
     int shutDown();
 private:
     struct fuse_operations fusefs_oper;
     int fuse_stat;
     int argc;
-    const char** argv;
+    char** argv;
 };
 
 #endif

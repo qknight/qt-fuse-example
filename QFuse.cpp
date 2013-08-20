@@ -1,8 +1,3 @@
-// parts of this code were adapted from fuse_server.c; a very good example on how
-// to use the fuse api ;-) -> thanks to Mike Shal <marfey@gmail.com>
-
-// thanks to cbreak#qt@irc.freenode.net for his help to get the aboutToQuit stuff working
-
 #include "QFuse.hh"
 
 #include <QFile>
@@ -111,10 +106,10 @@ QFuse::~QFuse() {
 }
 
 
-int QFuse::doWork() {
+void QFuse::doWork() {
     QStringList l = QCoreApplication::arguments();
     argc = l.size();
-    argv = new const char*[argc];
+    argv = new char*[argc];
     unsigned index = 0;
     foreach (const QString s, l) {
         QByteArray b = QFile::encodeName(s);
@@ -122,7 +117,7 @@ int QFuse::doWork() {
         char* z = (char*) malloc(strlen(tmp)+1);
         memcpy(z, tmp, strlen(tmp)+1);
         argv[index] = z;
-        std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
+//         std::cout << "'" << BOLDYELLOW << argv[index] << RESET << "'" << std::endl;
         index++;
     }
 
@@ -137,17 +132,7 @@ int QFuse::doWork() {
         goto err_out;
     }
 
-//     if (!fs.mountpoint) {
-      //FIXME what is different to hello.c example? i also pass no arguments yet i get no error message from the fuse library!?
-//         std::cout << RED << "no mountpoint was given, exiting" << RESET << std::endl;
-//         goto noerr_out;
-//     }
-
     std::cout << YELLOW << "mountpoint: " << fs.mountpoint << RESET << std::endl;
-    if (fs.multithreaded)
-        std::cout << YELLOW << "running multithreaded" << RESET << std::endl;
-    else
-        std::cout << YELLOW << "runnig singlethreaded" << RESET << std::endl;
 
     set_rootdir(realpath(fs.mountpoint, NULL));
 
@@ -160,13 +145,12 @@ int QFuse::doWork() {
         goto err_out;
     }
 
-    
     qDebug().nospace() <<  YELLOW << "fuse_mount worked" << RESET;
 
     fs.fuse = fuse_new(fs.ch, &args, &fusefs_oper, sizeof(fusefs_oper), NULL);
     fuse_opt_free_args(&args);
     if(!fs.fuse) {
-        perror("fuse_new");
+//         perror("fuse_new");
         goto err_unmount;
     }
 
@@ -176,12 +160,12 @@ int QFuse::doWork() {
     // calls either the single-threaded or the multi-threaded event loop
     // fuse_loop() or fuse_loop_mt()
     if(pthread_create(&fs.pid, NULL, fuse_thread, NULL) != 0) {
-        perror("pthread_create");
+//         perror("pthread_create");
         goto err_unmount;
     }
     qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse server up and running ;-)" << RESET;
 
-    return 0;
+    return;
 
 err_unmount:
     fuse_unmount(fs.mountpoint, fs.ch);
@@ -189,11 +173,7 @@ err_unmount:
 err_out:
     fs.running = 0;
     emit sigShutDownComplete();
-    return -1;
-noerr_out:
-    fs.running = 0;
-    emit sigShutDownComplete();
-    return 0;
+    return;
 }
 
 

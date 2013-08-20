@@ -1,16 +1,15 @@
-# todo
-- doWork(): use the return value
-- output is to small, there is something missing compared to hello example
-  --help
-  --version
-- make clean; make (fix all warnings)
-- check that the qt-fuse-example client meets all FUSE QA requirements
- - check all printf/cout/qDebug lines
- - check for errors when doing fuse function calls
- - [x] check that all required functions are called on shutdown
-  
 # what is this?
 qt-fuse-example is a lightweight example for how to use FUSE and Qt together. 
+
+NOTE: command line argument parsing in FUSE, using fuse_parse_cmdline(..) seems to require
+      calling fuse_mount(..) and fuse_loop()/fuse_loop_mt() although that _can't_ be working since
+      each such function, using perror(..), will print an error.
+      since i have added more debug messages compared to hello.c/hello_ll.c, running 
+      'qt-fuse-example --help' seems to be broken - which is NOT the case! 
+      when most of my debug messages:
+       - the colored ones
+       - the perror(..) lines 
+      are muted or removed, it works like in the hello.c or hello_ll.c example. 
 
 # features
  * POSIX signal handling, so that CTRL+C from a shell can be used to shutdown the program gracefully
@@ -25,10 +24,6 @@ qt-fuse-example is a lightweight example for how to use FUSE and Qt together.
  * this implementation features the hello.c minimal read only FUSE FS coming with the fuse library source
    - there exists only one file called 'hello'
    - and it contains "Hello World!"
- * command line arguments are parsed using fuse_parse_cmdline(..)
- - '-s' single vs multithreaded
- - '-d' enabled/disable debug
- - '--help' and '--version' for more details on FUSE command line parameters
 
 # dependencies
  * Qt 4.x
@@ -83,3 +78,18 @@ this codebase, respecting each subprojects license of course, is licensed - WTFP
     - examplefs.hh, examplefs.cc
   - FUSE example from https://code.google.com/p/fuse-examplefs/ 
     - wrap.cc, wrap.hh
+
+# QA
+- check that the qt-fuse-example client meets all FUSE QA requirements
+ - [x] check for errors when doing fuse function calls
+ - [x] check all printf/cout/qDebug lines
+ - [x] check all perror lines -> deactivated
+ - [x] check that all required functions are called on shutdown
+ - [x] make clean; make (fix problematic warnings)
+  
+# thanks
+thanks to:
+ - cbreak#qt@irc.freenode.net for help to get the aboutToQuit stuff working
+ - peppe#qt@irc.freenode.net for help with converting QCoreApplication::arguments() to argv
+ 
+ 

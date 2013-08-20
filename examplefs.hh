@@ -57,7 +57,7 @@ public:
     int Readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo);
     int Releasedir(const char *path, struct fuse_file_info *fileInfo);
     int Fsyncdir(const char *path, int datasync, struct fuse_file_info *fileInfo);
-    int Init(struct fuse_conn_info *conn);
+    void * Init(struct fuse_conn_info *conn);
     int Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo);
     int Access(const char *path, int mode);
     int Fgetattr (const char * path, struct stat * statbuf, struct fuse_file_info *fileInfo);

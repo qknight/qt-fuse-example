@@ -49,21 +49,21 @@ MyDaemon::~MyDaemon() {
 void MyDaemon::intSignalHandler(int)
 {
     char a = 1;
-    ::write(sigintFd[0], &a, sizeof(a));
+    if (::write(sigintFd[0], &a, sizeof(a)) != 0) {}
 }
 
 
 void MyDaemon::hupSignalHandler(int)
 {
     char a = 1;
-    ::write(sighupFd[0], &a, sizeof(a));
+    if (::write(sighupFd[0], &a, sizeof(a))) {}
 }
 
 
 void MyDaemon::termSignalHandler(int)
 {
     char a = 1;
-    ::write(sigtermFd[0], &a, sizeof(a));
+    if (::write(sigtermFd[0], &a, sizeof(a))) {}
 }
 
 
@@ -71,7 +71,7 @@ void MyDaemon::handleSigInt()
 {
     snInt->setEnabled(false);
     char tmp;
-    ::read(sigintFd[1], &tmp, sizeof(tmp));
+    if (::read(sigintFd[1], &tmp, sizeof(tmp))) {}
 
     qDebug().nospace() << MAGENTA << "emit sigINT();" << RESET;
 
@@ -84,7 +84,7 @@ void MyDaemon::handleSigTerm()
 {
     snTerm->setEnabled(false);
     char tmp;
-    ::read(sigtermFd[1], &tmp, sizeof(tmp));
+    if (::read(sigtermFd[1], &tmp, sizeof(tmp))) {}
 
     qDebug().nospace() << MAGENTA <<  "emit sigTerm()" << RESET;
 
@@ -97,7 +97,7 @@ void MyDaemon::handleSigHup()
 {
     snHup->setEnabled(false);
     char tmp;
-    ::read(sighupFd[1], &tmp, sizeof(tmp));
+    if (::read(sighupFd[1], &tmp, sizeof(tmp))) {}
 
     emit sigHUP();
     qDebug().nospace() << MAGENTA <<  "emit sigHUP()" << RESET;

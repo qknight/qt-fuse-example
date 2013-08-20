@@ -71,14 +71,14 @@ int ExampleFS::Open(const char *path, struct fuse_file_info *fileInfo) {
     return 0;
 }
 
-int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo) {
+int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info */*fileInfo*/) {
     printf(GREEN "ExampleFS::Read" RESET "\n");
     size_t len;
     if(strcmp(path, hello_path) != 0)
         return -ENOENT;
 
     len = strlen(hello_str);
-    if (offset < len) {
+    if (offset < (off_t) len) {
         if (offset + size > len)
             size = len - offset;
         memcpy(buf, hello_str + offset, size);
@@ -118,7 +118,7 @@ int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size
 
     (void) path;
 
-    src = malloc(sizeof(struct fuse_bufvec));
+    src = (fuse_bufvec*) malloc(sizeof(struct fuse_bufvec));
     if (src == NULL)
         return -ENOMEM;
 
@@ -126,7 +126,7 @@ int ExampleFS::Read_buf(const char *path, struct fuse_bufvec **bufp, size_t size
 
     int fd = open("QFuse", O_RDONLY);
 
-    src->buf[0].flags = FUSE_BUF_IS_FD | FUSE_BUF_FD_SEEK;
+    src->buf[0].flags = (fuse_buf_flags) (FUSE_BUF_IS_FD | FUSE_BUF_FD_SEEK);
     src->buf[0].fd = fd;// fileInfo->fh;
     src->buf[0].pos = off;
 
@@ -150,7 +150,7 @@ int ExampleFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 }
 
 
-int ExampleFS::Init(struct fuse_conn_info *conn) {
+void * ExampleFS::Init(struct fuse_conn_info *conn) {
     printf(GREEN "ExampleFS::Init" RESET "\n");
     return 0;
 }
