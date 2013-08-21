@@ -79,6 +79,8 @@ this codebase, respecting each subprojects license of course, is licensed - WTFP
   - FUSE example from https://code.google.com/p/fuse-examplefs/ 
     - wrap.cc, wrap.hh
 
+the code was put together by me, joachim schiele <js@lastlog.de> and i hope you can use it for whatever you have to do.
+
 # QA
 - check that the qt-fuse client meets all FUSE QA requirements
  - [x] check for errors when doing fuse function calls
