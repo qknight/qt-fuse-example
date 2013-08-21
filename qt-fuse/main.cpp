@@ -41,9 +41,11 @@ int main(int argc, char *argv[]) {
     MyDaemon d;
     QFuse qFuse;
 
-    QThread* workerThread1 = new QThread;
-    QObject::connect(workerThread1, SIGNAL(started()), &qFuse, SLOT(doWork()));
-    QObject::connect(workerThread1, SIGNAL(finished()), &qFuse, SLOT(deleteLater()));
+    //FIXME tested if FUSE can be 'bootstrapped' within the main eventloop
+    // so far this seems to work and no blocking occured.
+//     QThread* workerThread1 = new QThread;
+//     QObject::connect(workerThread1, SIGNAL(started()), &qFuse, SLOT(doWork()));
+//     QObject::connect(workerThread1, SIGNAL(finished()), &qFuse, SLOT(deleteLater()));
 
     QObject::connect(&d, SIGNAL(sigINT()), &qFuse, SLOT(shutDown()));
     QObject::connect(&d, SIGNAL(sigTERM()), &qFuse, SLOT(shutDown()));
@@ -57,9 +59,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    qFuse.doWork();
     // startup of FUSE backend
-    qFuse.moveToThread(workerThread1);
-    workerThread1->start();
+//     qFuse.moveToThread(workerThread1);
+//     workerThread1->start();
     
     return a.exec();
 }
