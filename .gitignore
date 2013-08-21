@@ -1,4 +1,4 @@
-qt-fuse-example
+qt-fuse/qt-fuse
 *.o
 moc_*
 *kdev4*
