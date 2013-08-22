@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
     MyDaemon d;
     QFuse qFuse;
 
-    QThread* workerThread1 = new QThread;
-    QObject::connect(workerThread1, SIGNAL(started()), &qFuse, SLOT(doWork()));
-    QObject::connect(workerThread1, SIGNAL(finished()), &qFuse, SLOT(deleteLater()));
+//     QThread* workerThread1 = new QThread;
+//     QObject::connect(workerThread1, SIGNAL(started()), &qFuse, SLOT(doWork()));
+//     QObject::connect(workerThread1, SIGNAL(finished()), &qFuse, SLOT(deleteLater()));
 
     QObject::connect(&d, SIGNAL(sigINT()), &qFuse, SLOT(shutDown()));
     QObject::connect(&d, SIGNAL(sigTERM()), &qFuse, SLOT(shutDown()));
@@ -58,8 +58,9 @@ int main(int argc, char *argv[]) {
     }
 
     // startup of FUSE backend
-    qFuse.moveToThread(workerThread1);
-    workerThread1->start();
+//     qFuse.moveToThread(workerThread1);
+//     workerThread1->start();
+    qFuse.doWork();
     
     return a.exec();
 }

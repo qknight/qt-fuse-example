@@ -1,3 +1,15 @@
+# todo
+- interprete the multithreaded variable
+ - implement fuse_loop_mt() bahaviour
+- remove the - still - additional QThread which should not be needed anymore
+ - also consider removing this for the qt-fuse example
+- add error handling and remove all hacky code parts
+- verify that all these methods work well:
+ - ctrl+c
+ - 'fusermount -u dst'
+ - 'kill 123'
+- update this documentation, see the README from the qt-fuse direcotry
+
 # what is this?
 this is a Qt4 example on how to integrate the FUSE eventloop (fuse_loop and/or fuse_loop_mt) into the
 qcoreapplication's eventloop.
@@ -6,20 +18,6 @@ qcoreapplication's eventloop.
 - in QFuse.cpp a QLocalSocket is used to listen to /dev/fuse stuff, input from there is read and then sent to:
   fuse_session_process_buf(se, &fbuf, ch);
 - this kind of implementes fuse_loop (and not fuse_loop_mt)
-# todo
-- implement fuse_loop_mt
-- remove the - still - additional QThread which should not be needed anymore
-- add error handling and remove all hacky code parts
-- major cleanup of the code
-- verify that all these methos work well:
- - ctrl+c
- - 'fusermount -u dst'
- - 'kill 123'
-- update this documentation
-- also fix the bug: 
-  fuse: reading device: Bad file descriptor
-  (see fuse_kern_chan.c::static int fuse_kern_chan_receive(struct fuse_chan **chp, char *buf, size_t size))
-
 
 http://sourceforge.net/mailarchive/forum.php?thread_name=87eixgzgkc.fsf%40frosties.localdomain&forum_name=fuse-devel
 
@@ -38,10 +36,10 @@ qknight comments:
 - did i use the fuse_lowlevel functions?
 
 
-==== Joachim ====
+================ Joachim ================================================================
 anatomy of the event loop spawned by FUSE:
  - a pipe is opened and read from: '/dev/fuse' (see 
-      lib/mount.c
+================ lib/mount.c ============================================================
       417:    const char *devname = "/dev/fuse";
       449:    fd = open(devname, O_RDWR | O_CLOEXEC);
       455:                            devname, strerror(errno));
@@ -50,7 +48,7 @@ anatomy of the event loop spawned by FUSE:
    )
  - the commands are serialized using 'struct fuse_in_header' the process_buf function callback
 
-long story: 
+================ long story: ============================================================
  - the eventloop of FUSE is implemented in fuse_loop or fuse_loop_mt
  - this blocking loop is normally started from inside a new (p)thread
  - fuse_loop(..) works like this:
@@ -88,7 +86,7 @@ long story:
        }
   - the res = fuse_session_receive_buf(se, &fbuf, &tmpch); internally uses a receive_buf callback which is
     declared in the fuse_session on se->receive_buf is set in:
-    lib/fuse_lowlevel.c
+================ lib/fuse_lowlevel.c ==============================================================
     2812:   se->receive_buf = fuse_ll_receive_buf;
     
   - in fuse_ll_receive_buf there are two implementations: a fallback one and a splice one
@@ -103,7 +101,7 @@ long story:
             .send = fuse_kern_chan_send,
             .destroy = fuse_kern_chan_destroy,
         };
-    in fuse_kern_chan.c:
+================ fuse_kern_chan.c: ================================================================
       static int fuse_kern_chan_receive(struct fuse_chan **chp, char *buf, size_t size)
       {
           struct fuse_chan *ch = *chp;
@@ -117,7 +115,7 @@ long story:
           err = errno;
 
           if (fuse_session_exited(se))
-          return 0;
+            return 0;
           if (res == -1) {
           /* ENOENT means the operation was interrupted, it's safe
             to restart */
@@ -141,5 +139,5 @@ long story:
           }
           return res;
       }
-        
+================================================================================================        
 

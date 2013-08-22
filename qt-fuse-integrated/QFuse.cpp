@@ -148,7 +148,7 @@ void QFuse::doWork() {
 
     qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_new worked" << RESET;
 
-     //FIXME hacky as hell!
+    //FIXME hacky as hell!
     socket->setSocketDescriptor(fuse_chan_fd(fuse_session_next_chan(fuse_get_session(fs.fuse), NULL)));
 
     return;
@@ -180,10 +180,14 @@ void QFuse::readSocket() {
 
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_0);
-
-    qDebug() << BOLDCYAN << __FUNCTION__ << "sizeof(struct fuse_in_header): " <<  sizeof(struct fuse_in_header) << RESET;
+    //FIXME also need to include splice copy stuff
+    //FIXME if both debug messages are removed, the program behaves differently and produces an error
+//     qDebug() << BOLDCYAN << __FUNCTION__ << "sizeof(struct fuse_in_header): " <<  sizeof(struct fuse_in_header) << RESET;
     qDebug() << BOLDCYAN << __FUNCTION__ << "bufsize: " << bufsize << RESET;
+    // FIXME this is the error:
+    //       fuse: copy from pipe: Illegal seek
 
+    //FIXME check if fbuf.mem can be used several times like done here
     while(socket->bytesAvailable() >= sizeof(struct fuse_in_header)) {
         fbuf.size = socket->bytesAvailable();
         int res = in.readRawData(fbuf.mem, bufsize);
@@ -193,15 +197,19 @@ void QFuse::readSocket() {
             free(fbuf.mem);
             return; //return -EIO;
         } else {
-            qDebug() << BOLDCYAN << __FUNCTION__ << QString("read %1 bytes from fd").arg(res).toStdString().c_str() << fuse_chan_fd(ch) << RESET;
+//             qDebug() << BOLDCYAN << __FUNCTION__ << QString("read %1 bytes from fd").arg(res).toStdString().c_str() << fuse_chan_fd(ch) << RESET;
+            //FIXME should fuse_session_process_buf be used instead?
             fuse_session_process_buf(se, &fbuf, ch);
         }
     }
+//     qDebug() << BOLDCYAN << __FUNCTION__ << "still socket->bytesAvailable(): " << socket->bytesAvailable() << RESET;
     free(fbuf.mem);
+    socket->flush();
 }
 
 
 void QFuse::displayError(QLocalSocket::LocalSocketError s) {
+    //FIXME this code is hacky
     qDebug() << __FUNCTION__ << RED << "LocalSocketError: " << s << RESET;
 }
 
