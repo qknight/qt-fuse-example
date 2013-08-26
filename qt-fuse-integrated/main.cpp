@@ -39,6 +39,13 @@ static int setup_unix_signal_handlers() {
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
     MyDaemon d;
+//     int a1 = -2;
+//     if ((unsigned) a1 > 0) {
+//       qDebug() << a1;
+//       qDebug() << (unsigned) a1;
+//         exit(1);
+//     }
+
     QFuse qFuse;
 
 //     QThread* workerThread1 = new QThread;
@@ -48,7 +55,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(&d, SIGNAL(sigINT()), &qFuse, SLOT(shutDown()));
     QObject::connect(&d, SIGNAL(sigTERM()), &qFuse, SLOT(shutDown()));
     QObject::connect(&qFuse, SIGNAL(sigShutDownComplete()), &a, SLOT(quit()));
-    
+
     // fusermount -u dst will trigger this slot at qFuse
     QObject::connect(&a, SIGNAL(aboutToQuit()), &qFuse, SLOT(shutDown()));
 
@@ -61,7 +68,7 @@ int main(int argc, char *argv[]) {
 //     qFuse.moveToThread(workerThread1);
 //     workerThread1->start();
     qFuse.doWork();
-    
+
     return a.exec();
 }
 

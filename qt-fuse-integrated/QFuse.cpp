@@ -95,6 +95,8 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
 
 QFuse::~QFuse() {
 //     qDebug().nospace() << YELLOW << __FUNCTION__ << RESET;
+    delete in;
+    delete socket;
 }
 
 
@@ -148,6 +150,9 @@ void QFuse::doWork() {
 
     qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_new worked" << RESET;
 
+    in = new QDataStream(socket);
+    in->setVersion(QDataStream::Qt_4_6);
+
     //FIXME hacky as hell!
     socket->setSocketDescriptor(fuse_chan_fd(fuse_session_next_chan(fuse_get_session(fs.fuse), NULL)));
 
@@ -163,14 +168,18 @@ err_out:
 }
 
 
+//FIXME also need to include
+//                     - splice copy stuff
+//                     - multithreaded
 void QFuse::readSocket() {
-    qDebug() << BOLDCYAN << __FUNCTION__ << "bytes available: " << socket->bytesAvailable() << RESET;
+//     qDebug() << BOLDCYAN << __FUNCTION__ << "bytes available: " << socket->bytesAvailable() << RESET;
 
     struct fuse_session *se = fuse_get_session(fs.fuse);
     struct fuse_chan *ch = fuse_session_next_chan(se, NULL);
     size_t bufsize = fuse_chan_bufsize(ch);
 
     fuse_buf fbuf;
+    //FIXME make this static or alloc this only if != NULL once
     fbuf.mem = (char *) malloc(bufsize);
     if (!fbuf.mem) {
         fprintf(stderr, "fuse: failed to allocate read buffer\n");
@@ -178,25 +187,29 @@ void QFuse::readSocket() {
     }
     fbuf.size = bufsize;
 
-    QDataStream in(socket);
-    in.setVersion(QDataStream::Qt_4_0);
     //FIXME also need to include splice copy stuff
-    //FIXME if both debug messages are removed, the program behaves differently and produces an error
+    //FIXME if either debug messages is uncommented, the program behaves differently and produces this error:
+    //FIXME    fuse: copy from pipe: Illegal seek
+    //FIXME interestingly this error condition can be inverted, so when QDataStream is declared/defined like this:
+    //FIXME    QDataStream in(socket);
+    //FIXME    in.setVersion(QDataStream::Qt_4_0);
+    //FIXME both qDebug statements below have to be commented in order to _NOT_ produce the error
+
 //     qDebug() << BOLDCYAN << __FUNCTION__ << "sizeof(struct fuse_in_header): " <<  sizeof(struct fuse_in_header) << RESET;
     qDebug() << BOLDCYAN << __FUNCTION__ << "bufsize: " << bufsize << RESET;
-    // FIXME this is the error:
-    //       fuse: copy from pipe: Illegal seek
-
-    //FIXME check if fbuf.mem can be used several times like done here
-    while(socket->bytesAvailable() >= sizeof(struct fuse_in_header)) {
+    
+    // copied from fuse_loop.c
+    while((unsigned) socket->bytesAvailable() >= sizeof(struct fuse_in_header)) {
         fbuf.size = socket->bytesAvailable();
-        int res = in.readRawData(fbuf.mem, bufsize);
+        int res = in->readRawData((char*)fbuf.mem, bufsize);
         //FIXME needs better error handling!
+
         if ((size_t) res < sizeof(struct fuse_in_header)) {
             fprintf(stderr, "short read on fuse device\n");
             free(fbuf.mem);
             return; //return -EIO;
         } else {
+//         qDebug() << BOLDCYAN << __FUNCTION__ << "res: " << res << RESET;
 //             qDebug() << BOLDCYAN << __FUNCTION__ << QString("read %1 bytes from fd").arg(res).toStdString().c_str() << fuse_chan_fd(ch) << RESET;
             //FIXME should fuse_session_process_buf be used instead?
             fuse_session_process_buf(se, &fbuf, ch);
@@ -204,10 +217,10 @@ void QFuse::readSocket() {
     }
 //     qDebug() << BOLDCYAN << __FUNCTION__ << "still socket->bytesAvailable(): " << socket->bytesAvailable() << RESET;
     free(fbuf.mem);
-    socket->flush();
 }
 
 
+//FIXME is this code used??
 void QFuse::displayError(QLocalSocket::LocalSocketError s) {
     //FIXME this code is hacky
     qDebug() << __FUNCTION__ << RED << "LocalSocketError: " << s << RESET;

@@ -4,3 +4,5 @@ moc_*
 *kdev4*
 *kate-swp*
 Makefile
+qt-fuse-integrated/lsb_release
+qt-fuse-integrated/qt-fuse-integrated

@@ -1,3 +1,6 @@
+# todo
+- REWRITE examplefs.cc::Read_buf
+
 # what is this?
 qt-fuse is a lightweight example for how to use FUSE and Qt together. 
 

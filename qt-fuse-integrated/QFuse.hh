@@ -38,6 +38,7 @@ private:
     int argc;
     char** argv;
     QLocalSocket* socket;
+    QDataStream* in;
 };
 
 #endif
