@@ -1,4 +1,5 @@
 # todo
+- remove doWork()
 - REWRITE examplefs.cc::Read_buf
 
 # what is this?
@@ -61,7 +62,7 @@ both commands will shutdown qt-fuse gracefully.
 in case it crashes, shoot the process with:
   kill -9 `pidof qt-fuse`
 
-afterwards remote the mount:
+afterwards remove the mount:
   fusermount -u dst
  
 # documentation

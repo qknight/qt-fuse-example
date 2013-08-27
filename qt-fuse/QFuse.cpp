@@ -171,30 +171,38 @@ err_unmount:
     fuse_unmount(fs.mountpoint, fs.ch);
     qDebug().nospace() << RED << QString("fuse error: Unable to mount FUSE on directory %1").arg(fs.mountpoint).toStdString().c_str() << RESET;
 err_out:
+    qDebug().nospace() << RED << "err_out" << RESET;
     fs.running = 0;
-    emit sigShutDownComplete();
+    QMetaObject::invokeMethod(QCoreApplication::instance(), "aboutToQuit", Qt::QueuedConnection);
+
     return;
 }
 
 
 int QFuse::shutDown() {
-    if (!fs.running) {
-//           qDebug().nospace() << YELLOW << __FUNCTION__ << " already called, won't be executed twice" << RESET;
+    // this must be called only once
+    static int guard = 0;
+
+    if (guard == 1) {
+        qDebug().nospace() << YELLOW << __FUNCTION__ << " already called, won't be executed twice" << RESET;
         return 0;
     }
-    fs.running = 0;
 
-    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_session_exit" << RESET;
-    fuse_session_exit (fuse_get_session(fs.fuse));
+    guard=1;
 
-    qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_unmount()" << RESET;
-    fuse_unmount(fs.mountpoint, fs.ch);
+    if (fs.running) {
+        qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_session_exit" << RESET;
+        fuse_session_exit (fuse_get_session(fs.fuse));
 
-    qDebug().nospace() << YELLOW << __FUNCTION__ << " calling pthread_join()" << RESET;
-    pthread_join(fs.pid, NULL);
+        qDebug().nospace() << YELLOW << __FUNCTION__ << " fuse_unmount()" << RESET;
+        fuse_unmount(fs.mountpoint, fs.ch);
 
-    fs.fuse = NULL;
-    memset(&fs, 0, sizeof(fs));
+        qDebug().nospace() << YELLOW << __FUNCTION__ << " calling pthread_join()" << RESET;
+        pthread_join(fs.pid, NULL);
+
+        fs.fuse = NULL;
+        memset(&fs, 0, sizeof(fs));
+    }
 
     qDebug().nospace() << YELLOW << __FUNCTION__ << " emit sigShutDownComplete()" << RESET;
     emit sigShutDownComplete();
