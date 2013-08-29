@@ -15,6 +15,9 @@
 #include <fuse/fuse_lowlevel.h>
 #include <string.h>
 
+#include "MyGlobalSingleton.hh"
+
+
 
 static struct fuse_server {
     pthread_t pid;
@@ -62,6 +65,8 @@ QFuse::QFuse(QObject* parent) : QObject(parent) {
 
     // init fusefs_oper struct
     memset(&fusefs_oper, 0, sizeof(fusefs_oper));
+    
+    MyGlobalSingleton::Instance();
 
     fusefs_oper.init = wrap_init;
     fusefs_oper.getattr = wrap_getattr;
@@ -209,6 +214,7 @@ int QFuse::shutDown() {
 
     return 0;
 }
+
 
 
 

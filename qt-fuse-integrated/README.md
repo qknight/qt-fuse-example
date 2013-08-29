@@ -1,6 +1,8 @@
 # todo
-- maybe /dev/fuse is a named pipe and then one should use QFile read/write according to peppe#qt@irc.freenode.net
- - what is /dev/fuse? a socket?
+
+this code is currently not working, and i stopped working on it for the time being as i don't have resources to go on without help.
+
+## implementation using QFile
 - interprete the multithreaded variable
  - implement multithreading like fuse_loop_mt()
  - implement splice
@@ -12,6 +14,12 @@
 - update this documentation, see the README from the qt-fuse direcotry
 - REWRITE examplefs.cc::Read_buf
 
+## implementation using QLocalSocket
+see commit cf2747d790db0688b868141d09892c81d6fb3c91 where i got the idea behind qt-fuse-intrgrated partially working using a QLocalSocket. 
+the current implementation based on a QFile does not work at all!
+
+since /dev/fuse is a character device and not a socket it wonders me why this code works in the first place ;-)
+
 # what is this?
 this is a Qt4 example on how to integrate the FUSE eventloop (fuse_loop and/or fuse_loop_mt) into the
 qcoreapplication's eventloop.
@@ -22,6 +30,9 @@ qcoreapplication's eventloop.
 - implementes the concept of fuse_loop (singlethreading)
 
 http://sourceforge.net/mailarchive/forum.php?thread_name=87eixgzgkc.fsf%40frosties.localdomain&forum_name=fuse-devel
+
+see also
+http://www.youblisher.com/files/publications/6/31627/pdf.pdf
 
 ==== Goswin ====
 Easier to break up the fuse loop and have QT4 watch the fuse file

@@ -1,6 +1,5 @@
 # todo
-- remove doWork()
-- REWRITE examplefs.cc::Read_buf
+- add SIGNALS+SLOT example
 
 # what is this?
 qt-fuse is a lightweight example for how to use FUSE and Qt together. 

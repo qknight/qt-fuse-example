@@ -8,5 +8,5 @@ DEPENDPATH += .
 QMAKE_CXXFLAGS += -Wall -fpermissive
 
 # Input
-SOURCES += main.cpp QFuse.cpp wrap.cc MyDaemon.cpp examplefs.cc
-HEADERS += QFuse.hh wrap.hh MyDaemon.hh examplefs.hh
+SOURCES += main.cpp QFuse.cpp wrap.cc MyDaemon.cpp examplefs.cc MyWrapper.cpp MyGlobalSingleton.cpp
+HEADERS += QFuse.hh wrap.hh MyDaemon.hh examplefs.hh MyWrapper.hh MyGlobalSingleton.hh

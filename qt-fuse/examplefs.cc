@@ -5,7 +5,11 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include <QEventLoop>
+#include "MyGlobalSingleton.hh"
+
 #include "ColorCodes.hh"
+#include "MyWrapper.hh"
 
 ExampleFS* ExampleFS::_instance = NULL;
 
@@ -13,6 +17,7 @@ ExampleFS* ExampleFS::_instance = NULL;
 
 static const char *hello_str = "Hello World!\n";
 static const char *hello_path = "/hello";
+
 
 ExampleFS* ExampleFS::Instance() {
     if(_instance == NULL) {
@@ -71,8 +76,24 @@ int ExampleFS::Open(const char *path, struct fuse_file_info *fileInfo) {
     return 0;
 }
 
+// http://qt-project.org/wiki/ThreadsEventsQObjects#7494f2b4836907fc1c09311e3a0305e6
 int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info */*fileInfo*/) {
     printf(GREEN "ExampleFS::Read" RESET "\n");
+
+    /////////////////////////// code to split sync code into signals+slots code //////////////////////////
+    MyWrapper myW;
+    QEventLoop loop;
+
+    QObject::connect(&myW, SIGNAL(request()), MyGlobalSingleton::Instance(), SLOT(processRequest()), Qt::QueuedConnection);
+    QObject::connect(MyGlobalSingleton::Instance(), SIGNAL(reply()), &myW, SLOT(receiveReply()), Qt::QueuedConnection);
+    QObject::connect(&myW, SIGNAL(finished()), &loop, SLOT(quit()), Qt::QueuedConnection);
+    
+    myW.sendRequest();
+    loop.exec();
+    /* reply has finished, use it */
+
+    /////////////////////////// code to split sync code into signals+slots code //////////////////////////
+    
     size_t len;
     if(strcmp(path, hello_path) != 0)
         return -ENOENT;
