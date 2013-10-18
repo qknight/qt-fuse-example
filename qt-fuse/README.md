@@ -1,6 +1,3 @@
-# todo
-- add SIGNALS+SLOT example
-
 # what is this?
 qt-fuse is a lightweight example for how to use FUSE and Qt together. 
 
@@ -27,6 +24,8 @@ NOTE: command line argument parsing in FUSE, using fuse_parse_cmdline(..) seems 
  * this implementation features the hello.c minimal read only FUSE FS coming with the fuse library source
    - there exists only one file called 'hello'
    - and it contains "Hello World!"
+ * there is a qt 'signal and slot' example how to communicate between the FUSE pthread, 
+   which is executing the callbackfunctions like examplefs.cc::Read(..)
 
 # dependencies
  * Qt 4.x

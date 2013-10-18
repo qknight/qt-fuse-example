@@ -9,10 +9,10 @@ public:
     static MyGlobalSingleton* Instance();
     
 public slots:
-  void processRequest();
+  void processRequest(QString s);
   
 signals:
-  void reply();
+  void reply(QString s);
   private:
     static MyGlobalSingleton* _instance;
 };

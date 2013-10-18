@@ -81,19 +81,24 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
     printf(GREEN "ExampleFS::Read" RESET "\n");
 
     /////////////////////////// code to split sync code into signals+slots code //////////////////////////
+    // FIXME this code might still be broken, see http://stackoverflow.com/questions/19426900/pthread-2-signals-and-slots-wrapper-mit-qeventloop
+    //       as MyGlobalSingleton::Instance() might be living in a different QThread (QCoreApplication)
     MyWrapper myW;
     QEventLoop loop;
 
-    QObject::connect(&myW, SIGNAL(request()), MyGlobalSingleton::Instance(), SLOT(processRequest()), Qt::QueuedConnection);
-    QObject::connect(MyGlobalSingleton::Instance(), SIGNAL(reply()), &myW, SLOT(receiveReply()), Qt::QueuedConnection);
-    QObject::connect(&myW, SIGNAL(finished()), &loop, SLOT(quit()), Qt::QueuedConnection);
-    
-    myW.sendRequest();
+    QObject::connect(&myW, SIGNAL(request(QString)), MyGlobalSingleton::Instance(), SLOT(processRequest(QString)), Qt::QueuedConnection);
+    QObject::connect(MyGlobalSingleton::Instance(), SIGNAL(reply(QString)), &myW, SLOT(receiveReply(QString)));
+    QObject::connect(&myW, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    myW.sendRequest("foobar");
     loop.exec();
     /* reply has finished, use it */
 
-    /////////////////////////// code to split sync code into signals+slots code //////////////////////////
+    Q_ASSERT(QThread::currentThread() == MyGlobalSingleton::Instance()->thread());
     
+    qDebug() << __FUNCTION__ << " result: " << myW.result();
+    /////////////////////////// code to split sync code into signals+slots code //////////////////////////
+
     size_t len;
     if(strcmp(path, hello_path) != 0)
         return -ENOENT;
@@ -111,21 +116,21 @@ int ExampleFS::Read(const char *path, char *buf, size_t size, off_t offset, stru
 }
 
 /** Store data from an open file in a buffer
- *
- * Similar to the read() method, but data is stored and
- * returned in a generic buffer.
- *
- * No actual copying of data has to take place, the source
- * file descriptor may simply be stored in the buffer for
- * later data transfer.
- *
- * The buffer must be allocated dynamically and stored at the
- * location pointed to by bufp.  If the buffer contains memory
- * regions, they too must be allocated using malloc().  The
- * allocated memory will be freed by the caller.
- *
- * Introduced in version 2.9
- */
+*
+* Similar to the read() method, but data is stored and
+* returned in a generic buffer.
+*
+* No actual copying of data has to take place, the source
+* file descriptor may simply be stored in the buffer for
+* later data transfer.
+*
+* The buffer must be allocated dynamically and stored at the
+* location pointed to by bufp.  If the buffer contains memory
+* regions, they too must be allocated using malloc().  The
+* allocated memory will be freed by the caller.
+*
+* Introduced in version 2.9
+*/
 // Also so wie ich das verstehe:
 // die geben dort nen Zeiger auf nen dynamischen Buffer rein dessen der dort in der Funktion erst mit "src" belegt wird.
 // und src ist halt ein auch in dieser Funktion initialisierter struct von fuse.

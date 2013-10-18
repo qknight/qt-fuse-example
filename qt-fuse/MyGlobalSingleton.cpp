@@ -12,8 +12,8 @@ MyGlobalSingleton* MyGlobalSingleton::Instance() {
     return _instance;
 }
 
-void MyGlobalSingleton::processRequest() {
-  qDebug() << "hello world";
-   emit reply();
+void MyGlobalSingleton::processRequest(QString s) {
+    qDebug() << __FUNCTION__ << " received" << s;
+    emit reply(s.toUpper());
 }
 

@@ -4,10 +4,15 @@ MyWrapper::MyWrapper() {
 
 }
 
-void MyWrapper::sendRequest() {
-    emit request();
+void MyWrapper::sendRequest(QString s) {
+    emit request(s);
 }
 
-void MyWrapper::receiveReply() {
+void MyWrapper::receiveReply(QString s) {
+    st = s;
     emit finished();
+}
+
+QString MyWrapper::result() {
+    return st;
 }
